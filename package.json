@@ -1,0 +1,29 @@
+{
+  "name": "nipp",
+  "version": "0.2.0-SNAPSHOT",
+  "description": "URL hosted Mini Application",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "bower install",
+    "deploy": "npm run build && gh-pages -m '[AUTO] Update document' -d ./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nwtgck/nipp.git"
+  },
+  "author": "Ryo Ota <nwtgck@gmail.com> (https://github.com/nwtgck)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nwtgck/nipp/issues"
+  },
+  "homepage": "https://github.com/nwtgck/nipp#readme",
+  "dependencies": {
+    "@babel/standalone": "^7.1.0",
+    "angular": "^1.7.5",
+    "opal": "^0.6.4"
+  },
+  "devDependencies": {
+    "bower": "^1.8.4",
+    "gh-pages": "^2.0.1"
+  }
+}

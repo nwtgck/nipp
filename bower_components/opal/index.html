@@ -1,0 +1,148 @@
+<!doctype html>
+
+<html style="background-color: white; min-height: 100%;overflow-y: scroll;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Opal: CDN distribution</title>
+  <link rel="icon" href="favicon.ico" />
+  <link href="./stylesheets/application.css" rel="stylesheet" type="text/css">
+  <script src="./javascripts/application.js" type="text/javascript"></script>
+  <link href="http://code.ionicframework.com/ionicons/1.4.1/css/ionicons.min.css" rel="stylesheet" type="text/css">
+  <script src="opal/current/opal.min.js" onload="Opal.load('opal')"></script>
+  <script src="opal/current/native.min.js" onload="Opal.load('native')"></script>
+  <script src="opal/current/opal-parser.min.js" onload="Opal.load('opal-parser')"></script>
+</head>
+<body class="index">
+<nav class="navbar navbar-default opal-nav" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="http://opalrb.com">
+        <img height="22"
+             src="https://secure.gravatar.com/avatar/88298620949a6534d403da2e356c9339?s=420&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-org-420.png"
+             style="margin-top:-10%;" width="22">
+        Opal
+      </a>
+      <button class="navbar-toggle" data-target="#opal-navbar" data-toggle="collapse" type="button">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="opal-navbar">
+      <ul class="nav navbar-nav">
+        <li class="active">
+          <a href="#">
+            <i class="ion-earth"></i>
+            CDN
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container">
+  <div>
+    <img
+      src="https://secure.gravatar.com/avatar/88298620949a6534d403da2e356c9339?s=420&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-org-420.png"
+      alt="" style="float:right;margin-top:-24px" width="96" height="96">
+
+    <div class="page-header">
+      <h1>Opal
+        <small>CDN distribution</small>
+      </h1>
+    </div>
+  </div>
+
+  <h2 id="url_scheme">URL scheme</h2>
+
+  <pre><code>//cdn.opalrb.com/opal/&lt;VERSION&gt;/opal.js
+//cdn.opalrb.com/opal/&lt;VERSION&gt;/opal.min.js
+//cdn.opalrb.com/opal/&lt;VERSION&gt;/opal.min.js.gz
+</code></pre>
+
+  <p>Where <code>&lt;VERSION&gt;</code> is the desired version number or <code>current</code>.
+
+  <h3>Versions available</h3>
+  <ul>
+    
+    <li><a href="opal/0.5.5/index.html">0.5.5</a></li>
+    
+    <li><a href="opal/0.6.0/index.html">0.6.0</a></li>
+    
+    <li><a href="opal/0.6.1/index.html">0.6.1</a></li>
+    
+    <li><a href="opal/0.6.2/index.html">0.6.2</a></li>
+    
+    <li><a href="opal/0.6.3/index.html">0.6.3</a></li>
+    
+    <li><a href="opal/0.7.0/index.html">0.7.0</a></li>
+    
+    <li><a href="opal/0.7.1/index.html">0.7.1</a></li>
+    
+    <li><a href="opal/0.8.0.rc2/index.html">0.8.0.rc2</a></li>
+    
+    <li><a href="opal/0.8.0/index.html">0.8.0</a></li>
+    
+    <li><a href="opal/0.8.1/index.html">0.8.1</a></li>
+    
+    <li><a href="opal/0.9.0.beta2/index.html">0.9.0.beta2</a></li>
+    
+    <li><a href="opal/0.9.2/index.html">0.9.2</a></li>
+    
+    <li><a href="opal/0.9.3/index.html">0.9.3</a></li>
+    
+    <li><a href="opal/0.9.4/index.html">0.9.4</a></li>
+    
+    <li><a href="opal/0.10.0/index.html">0.10.0</a></li>
+    
+    <li><a href="opal/0.10.1/index.html">0.10.1</a></li>
+    
+    <li><a href="opal/0.10.2/index.html">0.10.2</a></li>
+    
+    <li><a href="opal/0.10.3/index.html">0.10.3</a></li>
+    
+    <li><a href="opal/0.10.4/index.html">0.10.4</a></li>
+    
+    <li><a href="opal/0.10.5/index.html">0.10.5</a></li>
+    
+    <li><a href="opal/0.10.6/index.html">0.10.6</a></li>
+    
+    <li><a href="opal/0.11.0/index.html">0.11.0</a></li>
+    
+    <li><a href="opal/0.11.1/index.html">0.11.1</a></li>
+    
+    <li><a href="opal/0.11.2/index.html">0.11.2</a></li>
+    
+    <li><a href="opal/0.11.3/index.html">0.11.3</a></li>
+    
+    <li><a href="opal/current/index.html">current</a></li>
+    
+    <li><a href="opal/master/index.html">master</a></li>
+    
+  </ul>
+
+  <h2 id="license">License</h2>
+
+  <p>See <a href="http://opalrb.com">http://opalrb.com</a>.</p>
+</div>
+<script type="text/ruby">
+  puts "Hello from the console! (printend with Opal v#{RUBY_ENGINE_VERSION})"
+  class User
+    attr_accessor :name
+
+    def initialize(name)
+      @name = name
+    end
+
+    def admin?
+      @name == 'Admin'
+    end
+  end
+
+  user = User.new('Bob')
+  puts user
+  puts user.admin?
+</script>
+</body>
+</html>

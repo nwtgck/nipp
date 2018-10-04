@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+require 'erb'
+require 'fileutils'
+
+extend FileUtils
+
+erb = ERB.new(File.read("#{__dir__}/index.erb"))
+version_erb = ERB.new(DATA.read)
+
+versions = Dir["#{__dir__}/../opal/*"].map do |dir|
+  version = File.basename(dir)
+  cd dir do
+    paths = Dir['*.js'].sort
+    p version: version, paths: paths.size
+    index_html = version_erb.result_with_hash(version: version, paths: paths)
+
+    File.write 'index.html', index_html
+  end
+
+  {v: version, index: true}
+end.sort_by do |v|
+  if %w[current master].include? v[:v]
+    Gem::Version.new("10000000000.#{v[:v]}")
+  else
+    Gem::Version.new(v[:v])
+  end
+end
+
+p versions
+
+html = erb.result_with_hash(versions: versions)
+File.write "#{__dir__}/../index.html", html
+
+
+__END__
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Opal: CDN distribution for version <%= version %></title>
+  <style>body { font-family: sans-serif; }</style>
+</head>
+<body>
+  <h1>Opal: CDN distribution for version <%= version %></h1>
+  <nav><a href="/">« Back to all versions</a></nav>
+  <ul><% paths.each do |path| %>
+    <li>
+      <a href="//cdn.opalrb.com/opal/<%= version %>/<%= path %>">
+        //cdn.opalrb.com/opal/<%= version %>/<%= path %>
+      </a>
+    </li>
+  <% end %></ul>
+</body>
+</html>
