@@ -27,6 +27,8 @@ angular.module("nipp", [])
     $scope.rubyScript = b64DecodeUnicode($location.hash());
     // Transpiled JS code from Ruby
     var transpiledJsCode = "";
+    // Set default value to global variable "INPUT"
+    window.INPUT = $scope.inputText;
 
     // Watch Ruby script changes
     // (from: https://stackoverflow.com/a/15424144/2885946)
