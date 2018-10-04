@@ -56,6 +56,8 @@ angular.module("nipp", [])
     $scope.script = b64DecodeUnicode(location.hash.substring(1));
     // Executable function which return result
     var executableFunction = function(){return "";};
+    // Set default output
+    setOutputText();
     // Set transpiler
     var transpiler;
     switch (location.search) {
@@ -67,9 +69,14 @@ angular.module("nipp", [])
         console.log("Mode: Opal");
         transpiler = RubyTranspiler;
     }
-
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;
+
+    $scope.$watch('inputText', function(){
+      // Set output text
+      setOutputText();
+    });
+
     // Watch script changes
     // (from: https://stackoverflow.com/a/15424144/2885946)
     $scope.$watch('script', function(){
@@ -81,12 +88,14 @@ angular.module("nipp", [])
       try {
         // Transpile script and Set executable function
         executableFunction = transpiler.getExecutableFunction($scope.script);
+        // Set output text
+        setOutputText();
       } catch (err) {
         console.log("Transpile compile", err);
       }
     }, true);
 
-    $scope.outputText = function(){
+    function setOutputText(){
       // Set global INPUT string variable
       window.INPUT = $scope.inputText;
       try {
@@ -94,6 +103,7 @@ angular.module("nipp", [])
       } catch (err) {
         console.log("JS Runtime error", err)
       }
-      return output;
+      // Set output text
+      $scope.outputText = output;
     };
   }]);
