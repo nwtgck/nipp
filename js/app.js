@@ -1,8 +1,3 @@
-// Escape string to be used as string literal
-function escapeString(str) {
-  return str.replace(/\n/g, "\\n").replace(/"/g, '\\"').replace(/'/g, "\\'");
-}
-
 // Base64 encode
 // (from: https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding)
 function b64EncodeUnicode(str) {
@@ -30,6 +25,8 @@ angular.module("nipp", [])
     $scope.inputText  = "";
     // Set decoded location.hash as default Ruby script
     $scope.rubyScript = b64DecodeUnicode($location.hash());
+    // Transpiled JS code from Ruby
+    var transpiledJsCode = "";
 
     // Watch Ruby script changes
     // (from: https://stackoverflow.com/a/15424144/2885946)
@@ -38,15 +35,24 @@ angular.module("nipp", [])
       var base64RubyScript = b64EncodeUnicode($scope.rubyScript);
       // Change location hash to the code
       $location.hash(base64RubyScript);
+
+      try {
+        // Use javascript global variable "INPUT"
+        // (NOTE: `INPUT` will be pure JavaScript string variable)
+        var rubyScriptWithInput = 's = `INPUT`\n' + $scope.rubyScript;
+        transpiledJsCode = Opal.compile(rubyScriptWithInput);
+      } catch (err) {
+        console.log("Ruby compile", err);
+      }
     }, true);
 
     $scope.outputText = function(){
-      var rubyScriptWithInput = 's = "' + escapeString($scope.inputText) + '"\n' + $scope.rubyScript
+      // Set global INPUT string variable
+      window.INPUT = $scope.inputText;
       try {
-        var jsCode = Opal.compile(rubyScriptWithInput);
-        var rubyOutput = eval(jsCode);
+        var rubyOutput = eval(transpiledJsCode);
       } catch (err) {
-        console.log("Ruby or JS error", err)
+        console.log("JS error", err)
       }
       return rubyOutput;
     };
