@@ -47,6 +47,12 @@ var Es2017Transpiler = {
   }
 }
 
+// Setup opal
+var setupOpal = function(){
+  Opal.load('opal');
+  Opal.load('opal-parser');
+};
+
 angular.module("nipp", [])
   // NOTE: Don't use $location.hash() because it escapes "/"
   .controller('mainCtrl', ['$scope', function($scope){
@@ -67,6 +73,10 @@ angular.module("nipp", [])
         break;
       default:
         console.log("Mode: Opal");
+        // Setup Opal
+        setupOpal();
+        // Ensure to call once
+        setupOpal = function(){};
         transpiler = RubyTranspiler;
     }
     // Set default value to global variable "INPUT"
