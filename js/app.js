@@ -20,11 +20,12 @@ function b64DecodeUnicode(str) {
 }
 
 angular.module("nipp", [])
-  .controller('mainCtrl', ['$scope', '$location', function($scope, $location){
+  // NOTE: Don't use $location because it escapes "/"
+  .controller('mainCtrl', ['$scope', function($scope){
     // Set empty string as default input
     $scope.inputText  = "";
     // Set decoded location.hash as default Ruby script
-    $scope.rubyScript = b64DecodeUnicode($location.hash());
+    $scope.rubyScript = b64DecodeUnicode(location.hash.substring(1));
     // Executable function which return Ruby result
     var executableFunction = function(){return "";};
     // Set default value to global variable "INPUT"
@@ -36,7 +37,7 @@ angular.module("nipp", [])
       // Convert Ruby script to Base64
       var base64RubyScript = b64EncodeUnicode($scope.rubyScript);
       // Change location hash to the code
-      $location.hash(base64RubyScript);
+      location.hash = base64RubyScript;
 
       try {
         // Use javascript global variable "INPUT"
