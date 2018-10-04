@@ -41,7 +41,7 @@ angular.module("nipp", [])
       try {
         // Use javascript global variable "INPUT"
         // (NOTE: `INPUT` will be pure JavaScript string variable)
-        var rubyScriptWithInput = 's = `INPUT`\n' + $scope.rubyScript;
+        var rubyScriptWithInput = 's = `window.INPUT`\n' + $scope.rubyScript;
         transpiledJsCode = Opal.compile(rubyScriptWithInput);
       } catch (err) {
         console.log("Ruby compile", err);
