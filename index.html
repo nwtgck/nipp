@@ -6,15 +6,16 @@
     <meta name="description" content="URL Hosted Mini Application">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Opal -->
-    <script defer src="https://cdn.opalrb.com/opal/current/opal.min.js"></script>
-    <script defer src="https://cdn.opalrb.com/opal/current/opal-parser.min.js"></script>
+    <script defer src="bower_components/opal/opal/0.11.3/opal.min.js"></script>
+    <script defer src="bower_components/opal/opal/0.11.3/opal-parser.min.js"></script>
 
     <!-- AngularJS -->
-    <script defer src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.4/angular.min.js"></script>
+    <script defer src="node_modules/angular/angular.min.js"></script>
+
     <script defer src="js/app.js"></script>
 
     <!-- Babel (standalone) -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.1.0/babel.min.js"></script>
+    <script defer src="node_modules/@babel/standalone/babel.min.js"></script>
   </head>
   <body>
     <div ng-controller="mainCtrl">
