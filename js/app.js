@@ -34,6 +34,19 @@ var RubyTranspiler = {
   }
 }
 
+var Es2017Transpiler = {
+  getExecutableFunction: function(script){
+    // Use javascript global variable "INPUT" 
+    // (NOTE: `INPUT` will be pure JavaScript string variable)    
+    var scriptWithInput = 'var s = window.INPUT;\n' + script;
+    // Transpile
+    var code = Babel.transform(scriptWithInput, {presets: ["es2017"]}).code;
+    return function(){
+      return eval(code);
+    };
+  }
+}
+
 angular.module("nipp", [])
   // NOTE: Don't use $location.hash() because it escapes "/"
   .controller('mainCtrl', ['$scope', function($scope){
@@ -44,8 +57,17 @@ angular.module("nipp", [])
     // Executable function which return result
     var executableFunction = function(){return "";};
     // Set transpiler
-    // TODO: Hard code
-    var transpiler = RubyTranspiler;
+    var transpiler;
+    switch (location.search) {
+      case "?es2017":
+        console.log("Mode: ES2017")
+        transpiler = Es2017Transpiler;
+        break;
+      default:
+        console.log("Mode: Opal");
+        transpiler = RubyTranspiler;
+    }
+
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;
     // Watch script changes
