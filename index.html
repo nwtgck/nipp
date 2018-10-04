@@ -12,12 +12,15 @@
     <!-- AngularJS -->
     <script defer src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.4/angular.min.js"></script>
     <script defer src="js/app.js"></script>
+
+    <!-- Babel (standalone) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.1.0/babel.min.js"></script>
   </head>
   <body>
     <div ng-controller="mainCtrl">
-      <textarea ng-model="rubyScript" placeholder="Ruby: (e.g. 140 - s.size)" cols="30" rows="10"></textarea>
+      <textarea ng-model="script" placeholder="Script: (e.g. 140 - s.size)" cols="30" rows="10"></textarea>
       <textarea ng-model="inputText" placeholder="Input" ng-change="run()" cols="30" rows="10"></textarea>
-      <textarea ng-value="outputText()" placeholder="Output" cols="30" rows="10"></textarea>
+      <textarea ng-value="outputText" placeholder="Output" cols="30" rows="10"></textarea>
     </div>
   </body>
 </html>
