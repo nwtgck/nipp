@@ -25,8 +25,8 @@ angular.module("nipp", [])
     $scope.inputText  = "";
     // Set decoded location.hash as default Ruby script
     $scope.rubyScript = b64DecodeUnicode($location.hash());
-    // Transpiled JS code from Ruby
-    var transpiledJsCode = "";
+    // Executable function which return Ruby result
+    var executableFunction = function(){return "";};
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;
 
@@ -42,7 +42,12 @@ angular.module("nipp", [])
         // Use javascript global variable "INPUT"
         // (NOTE: `INPUT` will be pure JavaScript string variable)
         var rubyScriptWithInput = 's = `window.INPUT`\n' + $scope.rubyScript;
-        transpiledJsCode = Opal.compile(rubyScriptWithInput);
+        // Transpile Ruby to JavaScript
+        var transpiledJsCode = Opal.compile(rubyScriptWithInput);
+        // Remove the first comment from transpiled code
+        transpiledJsCode = transpiledJsCode.replace(/\/\*.*\*\/\s*/, '');
+        // Set executable function
+        executableFunction = new Function("return " + transpiledJsCode);
       } catch (err) {
         console.log("Ruby compile", err);
       }
@@ -52,7 +57,7 @@ angular.module("nipp", [])
       // Set global INPUT string variable
       window.INPUT = $scope.inputText;
       try {
-        var rubyOutput = eval(transpiledJsCode);
+        var rubyOutput = executableFunction();
       } catch (err) {
         console.log("JS error", err)
       }
