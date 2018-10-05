@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "bower install",
-    "deploy": "npm run build && gh-pages -m '[AUTO] Update document' -d ./"
+    "deploy": "npm run build && gh-pages -m '[AUTO] Upload pages' -d . -a"
   },
   "repository": {
     "type": "git",
