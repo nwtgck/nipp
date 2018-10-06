@@ -20,20 +20,24 @@ function b64DecodeUnicode(str) {
 }
 
 // Uint8Array => Base64
-function base64EncodeForUint8Array(uint8Array) {
-  return btoa(String.fromCharCode.apply(null, uint8Array));
+function uint8ArrayToBase64(uint8Array) {
+  // return btoa(String.fromCharCode.apply(null, uint8Array));
+  return btoa(uint8Array);
 }
 
-// Base64 => Uint8Array
-function base64DecodeForUint8Array(base64Encoded) {
-  return new Uint8Array(atob(base64Encoded).split('').map(function(c){return c.charCodeAt(0);}));
+// Base64 => binary String
+function base64ToBinaryString(base64Encoded) {
+  // NOTE: Use `new Uint8Array(atob(base64Encoded).split('').map(function(c){return c.charCodeAt(0);})) to get Uint8Array
+  return atob(base64Encoded);
 }
 
 // Encode code
 function encodeCode(code) {
   try {
-    var uint8Array = pako.deflate(code, {level: 9});
-    return base64EncodeForUint8Array(uint8Array);
+    // NOTE: Negative windowBits means no header and no checksum
+    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
+    var binStr = pako.deflate(code, {level: 9, windowBits: -8, to: 'string'});
+    return btoa(binStr);
   } catch (err) {
     return "";
   }
@@ -42,8 +46,11 @@ function encodeCode(code) {
 // Decode code
 function decodeCode(encodedCode) {
   try {
-    var uint8Array = base64DecodeForUint8Array(encodedCode);
-    return pako.inflate(uint8Array, {to: 'string'});
+    // Base64 => binary String
+    var binStr = atob(encodedCode);
+    // NOTE: Negative windowBits means no header and no checksum
+    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
+    return pako.inflate(binStr, {to: 'string', windowBits: -8});
   } catch (err) {
     return "";
   }
