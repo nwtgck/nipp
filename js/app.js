@@ -19,6 +19,36 @@ function b64DecodeUnicode(str) {
   }).join(''));
 }
 
+// Uint8Array => Base64
+function base64EncodeForUint8Array(uint8Array) {
+  return btoa(String.fromCharCode.apply(null, uint8Array));
+}
+
+// Base64 => Uint8Array
+function base64DecodeForUint8Array(base64Encoded) {
+  return new Uint8Array(atob(base64Encoded).split('').map(function(c){return c.charCodeAt(0);}));
+}
+
+// Encode code
+function encodeCode(code) {
+  try {
+    var uint8Array = pako.deflate(code, {level: 9});
+    return base64EncodeForUint8Array(uint8Array);
+  } catch (err) {
+    return "";
+  }
+}
+
+// Decode code
+function decodeCode(encodedCode) {
+  try {
+    var uint8Array = base64DecodeForUint8Array(encodedCode);
+    return pako.inflate(uint8Array, {to: 'string'});
+  } catch (err) {
+    return "";
+  }
+}
+
 var RubyTranspiler = {
   getExecutableFunction: function(rubyScript){
     // Use javascript global variable "INPUT"
@@ -63,10 +93,10 @@ function parseLocationHash() {
   }
   // Get page title
   var title = decodeURI((location.hash.substring(1, slashIdx)).replace(/_/g, " "));
-  // Get Base64 encoded code
-  var base64Code = location.hash.substring(slashIdx+1, location.hash.length)
+  // Get encoded code
+  var encodedCode = location.hash.substring(slashIdx+1, location.hash.length)
   // Get code
-  var code = b64DecodeUnicode(base64Code)
+  var code = decodeCode(encodedCode);
   return {
     pageTitle: title,
     code: code
@@ -109,10 +139,10 @@ angular.module("nipp", [])
 
     // Set location.hash
     function setLocationHash() {
-      // Convert script to Base64
-      var base64Script = b64EncodeUnicode($scope.script);
+      // Encode code
+      var encodedCode = encodeCode($scope.script);
       // Change location hash to the code
-      location.hash = ($scope.pageTitle).replace(/ /g, "_")+"/"+base64Script;
+      location.hash = ($scope.pageTitle).replace(/ /g, "_")+"/"+encodedCode;
     }
 
     $scope.$watch("pageTitle", function(){
