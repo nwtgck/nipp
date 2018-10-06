@@ -1,41 +1,10 @@
-// Base64 encode
-// (from: https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding)
-function b64EncodeUnicode(str) {
-  // first we use encodeURIComponent to get percent-encoded UTF-8,
-  // then we convert the percent encodings into raw bytes which
-  // can be fed into btoa.
-  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
-      function toSolidBytes(match, p1) {
-          return String.fromCharCode('0x' + p1);
-  }));
-}
-
-// Base64 decode
-// (from: https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding)
-function b64DecodeUnicode(str) {
-  // Going backwards: from bytestream, to percent-encoding, to original string.
-  return decodeURIComponent(atob(str).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join(''));
-}
-
-// Uint8Array => Base64
-function base64EncodeForUint8Array(uint8Array) {
-  return btoa(String.fromCharCode.apply(null, uint8Array));
-}
-
-// Base64 => Uint8Array
-function base64DecodeForUint8Array(base64Encoded) {
-  return new Uint8Array(atob(base64Encoded).split('').map(function(c){return c.charCodeAt(0);}));
-}
-
 // Encode code
 function encodeCode(code) {
   try {
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
-    var uint8Array = pako.deflate(code, {level: 9, windowBits: -8});
-    return base64EncodeForUint8Array(uint8Array);
+    var binStr = pako.deflate(code, {to: 'string', level: 9, windowBits: -8});
+    return btoa(binStr);
   } catch (err) {
     return "";
   }
@@ -44,10 +13,11 @@ function encodeCode(code) {
 // Decode code
 function decodeCode(encodedCode) {
   try {
-    var uint8Array = base64DecodeForUint8Array(encodedCode);
+    // Base64 => binary String
+    var binStr = atob(encodedCode);
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
-    return pako.inflate(uint8Array, {to: 'string', windowBits: -8});
+    return pako.inflate(binStr, {to: 'string', windowBits: -8});
   } catch (err) {
     return "";
   }
