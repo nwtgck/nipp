@@ -62,7 +62,7 @@ function parseLocationHash() {
     slashIdx = location.hash.length
   }
   // Get page title
-  var title = (location.hash.substring(1, slashIdx)).replace(/_/g, " ");
+  var title = decodeURI((location.hash.substring(1, slashIdx)).replace(/_/g, " "));
   // Get Base64 encoded code
   var base64Code = location.hash.substring(slashIdx+1, location.hash.length)
   // Get code
