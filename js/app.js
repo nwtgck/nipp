@@ -1,42 +1,9 @@
-// Base64 encode
-// (from: https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding)
-function b64EncodeUnicode(str) {
-  // first we use encodeURIComponent to get percent-encoded UTF-8,
-  // then we convert the percent encodings into raw bytes which
-  // can be fed into btoa.
-  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
-      function toSolidBytes(match, p1) {
-          return String.fromCharCode('0x' + p1);
-  }));
-}
-
-// Base64 decode
-// (from: https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding)
-function b64DecodeUnicode(str) {
-  // Going backwards: from bytestream, to percent-encoding, to original string.
-  return decodeURIComponent(atob(str).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join(''));
-}
-
-// Uint8Array => Base64
-function uint8ArrayToBase64(uint8Array) {
-  // return btoa(String.fromCharCode.apply(null, uint8Array));
-  return btoa(uint8Array);
-}
-
-// Base64 => binary String
-function base64ToBinaryString(base64Encoded) {
-  // NOTE: Use `new Uint8Array(atob(base64Encoded).split('').map(function(c){return c.charCodeAt(0);})) to get Uint8Array
-  return atob(base64Encoded);
-}
-
 // Encode code
 function encodeCode(code) {
   try {
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
-    var binStr = pako.deflate(code, {level: 9, windowBits: -8, to: 'string'});
+    var binStr = pako.deflate(code, {to: 'string', level: 9, windowBits: -8});
     return btoa(binStr);
   } catch (err) {
     return "";
