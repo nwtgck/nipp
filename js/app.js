@@ -53,13 +53,38 @@ var setupOpal = function(){
   Opal.load('opal-parser');
 };
 
+// Parse location.hash and return page title and code
+function parseLocationHash() {
+  // Find "/" in location.hash
+  var slashIdx = location.hash.indexOf("/")
+  // If "/" not found
+  if(slashIdx === -1){
+    slashIdx = location.hash.length
+  }
+  // Get page title
+  var title = decodeURI((location.hash.substring(1, slashIdx)).replace(/_/g, " "));
+  // Get Base64 encoded code
+  var base64Code = location.hash.substring(slashIdx+1, location.hash.length)
+  // Get code
+  var code = b64DecodeUnicode(base64Code)
+  return {
+    pageTitle: title,
+    code: code
+  };
+}
+
 angular.module("nipp", [])
   // NOTE: Don't use $location.hash() because it escapes "/"
   .controller('mainCtrl', ['$scope', function($scope){
+    // Get page title and code
+    var titleAndCode = parseLocationHash();
+    // Set page title
+    $scope.pageTitle = titleAndCode.pageTitle;
+    document.title   = titleAndCode.pageTitle;
     // Set empty string as default input
     $scope.inputText  = "";
     // Set decoded location.hash as default script
-    $scope.script = b64DecodeUnicode(location.hash.substring(1));
+    $scope.script = titleAndCode.code;
     // Executable function which return result
     var executableFunction = function(){return "";};
     // Set default output
@@ -82,6 +107,21 @@ angular.module("nipp", [])
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;
 
+    // Set location.hash
+    function setLocationHash() {
+      // Convert script to Base64
+      var base64Script = b64EncodeUnicode($scope.script);
+      // Change location hash to the code
+      location.hash = ($scope.pageTitle).replace(/ /g, "_")+"/"+base64Script;
+    }
+
+    $scope.$watch("pageTitle", function(){
+      // Set page title
+      document.title = $scope.pageTitle;
+      // Set location.hash
+      setLocationHash();
+    });
+
     $scope.$watch('inputText', function(){
       // Set output text
       setOutputText();
@@ -90,10 +130,8 @@ angular.module("nipp", [])
     // Watch script changes
     // (from: https://stackoverflow.com/a/15424144/2885946)
     $scope.$watch('script', function(){
-      // Convert script to Base64
-      var base64Script = b64EncodeUnicode($scope.script);
-      // Change location hash to the code
-      location.hash = base64Script;
+      // Set location.hash
+      setLocationHash();
 
       try {
         // Transpile script and Set executable function
