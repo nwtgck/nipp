@@ -32,7 +32,9 @@ function base64DecodeForUint8Array(base64Encoded) {
 // Encode code
 function encodeCode(code) {
   try {
-    var uint8Array = pako.deflate(code, {level: 9});
+    // NOTE: Negative windowBits means no header and no checksum
+    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
+    var uint8Array = pako.deflate(code, {level: 9, windowBits: -8});
     return base64EncodeForUint8Array(uint8Array);
   } catch (err) {
     return "";
@@ -43,7 +45,9 @@ function encodeCode(code) {
 function decodeCode(encodedCode) {
   try {
     var uint8Array = base64DecodeForUint8Array(encodedCode);
-    return pako.inflate(uint8Array, {to: 'string'});
+    // NOTE: Negative windowBits means no header and no checksum
+    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
+    return pako.inflate(uint8Array, {to: 'string', windowBits: -8});
   } catch (err) {
     return "";
   }
