@@ -80,6 +80,8 @@ function parseLocationHash() {
 angular.module("nipp", [])
   // NOTE: Don't use $location.hash() because it escapes "/"
   .controller('mainCtrl', ['$scope', function($scope){
+    // Parse query string
+    var locationQuery = URLParse.qs.parse(location.search);
     // Get page title and code
     var titleAndCode = parseLocationHash();
     // Set page title
@@ -95,18 +97,18 @@ angular.module("nipp", [])
     setOutputText();
     // Set transpiler
     var transpiler;
-    switch (location.search) {
-      case "?es2017":
-        console.log("Mode: ES2017")
-        transpiler = Es2017Transpiler;
-        break;
-      default:
-        console.log("Mode: Opal");
-        // Setup Opal
-        setupOpal();
-        // Ensure to call once
-        setupOpal = function(){};
-        transpiler = RubyTranspiler;
+    // Get query
+    var queryKeys = Object.keys(locationQuery);
+    if (queryKeys.includes("es2017")) {
+      console.log("Mode: ES2017");
+      transpiler = Es2017Transpiler;
+    } else {
+      console.log("Mode: Opal");
+      // Setup Opal
+      setupOpal();
+      // Ensure to call once
+      setupOpal = function(){};
+      transpiler = RubyTranspiler;
     }
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;

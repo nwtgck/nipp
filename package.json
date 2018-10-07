@@ -21,7 +21,8 @@
     "@babel/standalone": "^7.1.0",
     "angular": "^1.7.5",
     "opal": "^0.6.4",
-    "pako": "^1.0.6"
+    "pako": "^1.0.6",
+    "url-parse": "^1.4.3"
   },
   "devDependencies": {
     "bower": "^1.8.4",
