@@ -1,9 +1,21 @@
-// Encode code
-function encodeCode(code) {
-  try {
+var Deflate = {
+  compress: function(str){
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
-    var binStr = pako.deflate(code, {to: 'string', level: 9, windowBits: -8});
+    var binStr = pako.deflate(str, {to: 'string', level: 9, windowBits: -8});
+    return binStr;
+  },
+  decompress: function(binStr){
+    // NOTE: Negative windowBits means no header and no checksum
+    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
+    return pako.inflate(binStr, {to: 'string', windowBits: -8});
+  }
+};
+
+// Encode code
+function encodeCode(code, compressor) {
+  try {
+    var binStr = compressor(code);
     return btoa(binStr);
   } catch (err) {
     return "";
@@ -11,13 +23,11 @@ function encodeCode(code) {
 }
 
 // Decode code
-function decodeCode(encodedCode) {
+function decodeCode(encodedCode, decompressor) {
   try {
     // Base64 => binary String
     var binStr = atob(encodedCode);
-    // NOTE: Negative windowBits means no header and no checksum
-    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
-    return pako.inflate(binStr, {to: 'string', windowBits: -8});
+    return decompressor(binStr);
   } catch (err) {
     return "";
   }
@@ -58,7 +68,7 @@ var setupOpal = function(){
 };
 
 // Parse location.hash and return page title and code
-function parseLocationHash() {
+function parseLocationHash(decompressor) {
   // Find "/" in location.hash
   var slashIdx = location.hash.indexOf("/")
   // If "/" not found
@@ -70,7 +80,7 @@ function parseLocationHash() {
   // Get encoded code
   var encodedCode = location.hash.substring(slashIdx+1, location.hash.length)
   // Get code
-  var code = decodeCode(encodedCode);
+  var code = decodeCode(encodedCode, decompressor);
   return {
     pageTitle: title,
     code: code
@@ -82,8 +92,10 @@ angular.module("nipp", [])
   .controller('mainCtrl', ['$scope', function($scope){
     // Parse query string
     var locationQuery = URLParse.qs.parse(location.search);
+    // Compression algorithm
+    $scope.compressionAlg = Deflate;
     // Get page title and code
-    var titleAndCode = parseLocationHash();
+    var titleAndCode = parseLocationHash($scope.compressionAlg.decompress);
     // Set page title
     $scope.pageTitle = titleAndCode.pageTitle;
     document.title   = titleAndCode.pageTitle;
@@ -116,7 +128,7 @@ angular.module("nipp", [])
     // Set location.hash
     function setLocationHash() {
       // Encode code
-      var encodedCode = encodeCode($scope.script);
+      var encodedCode = encodeCode($scope.script, $scope.compressionAlg.compress);
       // Change location hash to the code
       location.hash = ($scope.pageTitle).replace(/ /g, "_")+"/"+encodedCode;
     }
