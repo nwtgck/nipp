@@ -1,22 +1,26 @@
-// Base64 encode
-// (from: https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding)
-function b64EncodeUnicode(str) {
-  // first we use encodeURIComponent to get percent-encoded UTF-8,
-  // then we convert the percent encodings into raw bytes which
-  // can be fed into btoa.
-  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
-      function toSolidBytes(match, p1) {
-          return String.fromCharCode('0x' + p1);
-  }));
+// Encode code
+function encodeCode(code) {
+  try {
+    // NOTE: Negative windowBits means no header and no checksum
+    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
+    var binStr = pako.deflate(code, {to: 'string', level: 9, windowBits: -8});
+    return btoa(binStr);
+  } catch (err) {
+    return "";
+  }
 }
 
-// Base64 decode
-// (from: https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding)
-function b64DecodeUnicode(str) {
-  // Going backwards: from bytestream, to percent-encoding, to original string.
-  return decodeURIComponent(atob(str).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join(''));
+// Decode code
+function decodeCode(encodedCode) {
+  try {
+    // Base64 => binary String
+    var binStr = atob(encodedCode);
+    // NOTE: Negative windowBits means no header and no checksum
+    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
+    return pako.inflate(binStr, {to: 'string', windowBits: -8});
+  } catch (err) {
+    return "";
+  }
 }
 
 var RubyTranspiler = {
@@ -53,13 +57,38 @@ var setupOpal = function(){
   Opal.load('opal-parser');
 };
 
+// Parse location.hash and return page title and code
+function parseLocationHash() {
+  // Find "/" in location.hash
+  var slashIdx = location.hash.indexOf("/")
+  // If "/" not found
+  if(slashIdx === -1){
+    slashIdx = location.hash.length
+  }
+  // Get page title
+  var title = decodeURI((location.hash.substring(1, slashIdx)).replace(/_/g, " "));
+  // Get encoded code
+  var encodedCode = location.hash.substring(slashIdx+1, location.hash.length)
+  // Get code
+  var code = decodeCode(encodedCode);
+  return {
+    pageTitle: title,
+    code: code
+  };
+}
+
 angular.module("nipp", [])
   // NOTE: Don't use $location.hash() because it escapes "/"
   .controller('mainCtrl', ['$scope', function($scope){
+    // Get page title and code
+    var titleAndCode = parseLocationHash();
+    // Set page title
+    $scope.pageTitle = titleAndCode.pageTitle;
+    document.title   = titleAndCode.pageTitle;
     // Set empty string as default input
     $scope.inputText  = "";
     // Set decoded location.hash as default script
-    $scope.script = b64DecodeUnicode(location.hash.substring(1));
+    $scope.script = titleAndCode.code;
     // Executable function which return result
     var executableFunction = function(){return "";};
     // Set default output
@@ -82,6 +111,21 @@ angular.module("nipp", [])
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;
 
+    // Set location.hash
+    function setLocationHash() {
+      // Encode code
+      var encodedCode = encodeCode($scope.script);
+      // Change location hash to the code
+      location.hash = ($scope.pageTitle).replace(/ /g, "_")+"/"+encodedCode;
+    }
+
+    $scope.$watch("pageTitle", function(){
+      // Set page title
+      document.title = $scope.pageTitle;
+      // Set location.hash
+      setLocationHash();
+    });
+
     $scope.$watch('inputText', function(){
       // Set output text
       setOutputText();
@@ -90,10 +134,8 @@ angular.module("nipp", [])
     // Watch script changes
     // (from: https://stackoverflow.com/a/15424144/2885946)
     $scope.$watch('script', function(){
-      // Convert script to Base64
-      var base64Script = b64EncodeUnicode($scope.script);
-      // Change location hash to the code
-      location.hash = base64Script;
+      // Set location.hash
+      setLocationHash();
 
       try {
         // Transpile script and Set executable function
