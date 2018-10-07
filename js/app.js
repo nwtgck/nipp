@@ -1,4 +1,5 @@
 var DeflateAlg = {
+  name: "Deflate",
   compress: function(str){
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
@@ -13,6 +14,7 @@ var DeflateAlg = {
 };
 
 var LZMAAlg = {
+  name: "LZMA",
   compress: function(str) {
     var compressed = LZMA.compress(str, 9);
     // (from: https://github.com/alcor/itty-bitty/blob/5292c4b7891939dab89412f9e474bca707c9bec5/data.js#L25)
@@ -107,8 +109,12 @@ angular.module("nipp", [])
     var locationQuery = URLParse.qs.parse(location.search);
     // Get query keys
     var queryKeys = Object.keys(locationQuery);
+    $scope.compressionAlgs = [
+      DeflateAlg,
+      LZMAAlg
+    ];
     // Compression algorithm
-    $scope.compressionAlg = DeflateAlg;
+    $scope.compressionAlg = $scope.compressionAlgs[0];
     if (queryKeys.includes("lzma")) {
       $scope.compressionAlg = LZMAAlg;
     }
@@ -195,6 +201,13 @@ angular.module("nipp", [])
       setQuery();
       // Transpile
       $scope.transpile();
+    });
+
+    $scope.$watch('compressionAlg', function(){
+      // Update location.hash
+      setLocationHash();
+      // Update query parameter
+      setQuery();
     });
 
     // Watch script changes
