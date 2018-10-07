@@ -45,6 +45,7 @@ function decodeCode(encodedCode, decompressor) {
 }
 
 var RubyTranspiler = {
+  name: "Ruby",
   getExecutableFunction: function(rubyScript){
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
@@ -60,6 +61,7 @@ var RubyTranspiler = {
 }
 
 var Es2017Transpiler = {
+  name: "ES2017",
   getExecutableFunction: function(script){
     // Use javascript global variable "INPUT" 
     // (NOTE: `INPUT` will be pure JavaScript string variable)    
@@ -123,21 +125,39 @@ angular.module("nipp", [])
     var executableFunction = function(){return "";};
     // Set default output
     setOutputText();
+    $scope.transpilers = [
+      RubyTranspiler,
+      Es2017Transpiler
+    ];
     // Set transpiler
-    var transpiler;
+    $scope.transpiler;
     if (queryKeys.includes("es2017")) {
       console.log("Mode: ES2017");
-      transpiler = Es2017Transpiler;
+      $scope.transpiler = Es2017Transpiler;
     } else {
       console.log("Mode: Opal");
       // Setup Opal
       setupOpal();
       // Ensure to call once
       setupOpal = function(){};
-      transpiler = RubyTranspiler;
+      $scope.transpiler = RubyTranspiler;
     }
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;
+
+    // Set query parameter
+    function setQuery() {
+      var queryKeys = [];
+      if ($scope.transpiler === Es2017Transpiler) {
+        queryKeys.push("es2017");
+      }
+      if ($scope.compressionAlg === LZMAAlg) {
+        queryKeys.push("lzma");
+      }
+      // Generate query paramter
+      var query = queryKeys.join("&");
+      location.search = query;
+    }
 
     // Set location.hash
     function setLocationHash() {
@@ -159,20 +179,31 @@ angular.module("nipp", [])
       setOutputText();
     });
 
-    // Watch script changes
-    // (from: https://stackoverflow.com/a/15424144/2885946)
-    $scope.$watch('script', function(){
-      // Set location.hash
-      setLocationHash();
-
+    $scope.transpile = function(){
       try {
         // Transpile script and Set executable function
-        executableFunction = transpiler.getExecutableFunction($scope.script);
+        executableFunction = $scope.transpiler.getExecutableFunction($scope.script);
         // Set output text
         setOutputText();
       } catch (err) {
         console.log("Transpile compile", err);
       }
+    };
+
+    $scope.$watch('transpiler', function(){
+      // Update query parameter
+      setQuery();
+      // Transpile
+      $scope.transpile();
+    });
+
+    // Watch script changes
+    // (from: https://stackoverflow.com/a/15424144/2885946)
+    $scope.$watch('script', function(){
+      // Set location.hash
+      setLocationHash();
+      // Transpile
+      $scope.transpile();
     }, true);
 
     function setOutputText(){
