@@ -1,4 +1,5 @@
 var DeflateAlg = {
+  name: "Deflate",
   compress: function(str){
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
@@ -13,6 +14,7 @@ var DeflateAlg = {
 };
 
 var LZMAAlg = {
+  name: "LZMA",
   compress: function(str) {
     var compressed = LZMA.compress(str, 9);
     // (from: https://github.com/alcor/itty-bitty/blob/5292c4b7891939dab89412f9e474bca707c9bec5/data.js#L25)
@@ -45,6 +47,7 @@ function decodeCode(encodedCode, decompressor) {
 }
 
 var RubyTranspiler = {
+  name: "Ruby",
   getExecutableFunction: function(rubyScript){
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
@@ -60,6 +63,7 @@ var RubyTranspiler = {
 }
 
 var Es2017Transpiler = {
+  name: "ES2017",
   getExecutableFunction: function(script){
     // Use javascript global variable "INPUT" 
     // (NOTE: `INPUT` will be pure JavaScript string variable)    
@@ -105,8 +109,12 @@ angular.module("nipp", [])
     var locationQuery = URLParse.qs.parse(location.search);
     // Get query keys
     var queryKeys = Object.keys(locationQuery);
+    $scope.compressionAlgs = [
+      DeflateAlg,
+      LZMAAlg
+    ];
     // Compression algorithm
-    $scope.compressionAlg = DeflateAlg;
+    $scope.compressionAlg = $scope.compressionAlgs[0];
     if (queryKeys.includes("lzma")) {
       $scope.compressionAlg = LZMAAlg;
     }
@@ -123,21 +131,39 @@ angular.module("nipp", [])
     var executableFunction = function(){return "";};
     // Set default output
     setOutputText();
+    $scope.transpilers = [
+      RubyTranspiler,
+      Es2017Transpiler
+    ];
     // Set transpiler
-    var transpiler;
+    $scope.transpiler;
     if (queryKeys.includes("es2017")) {
       console.log("Mode: ES2017");
-      transpiler = Es2017Transpiler;
+      $scope.transpiler = Es2017Transpiler;
     } else {
       console.log("Mode: Opal");
       // Setup Opal
       setupOpal();
       // Ensure to call once
       setupOpal = function(){};
-      transpiler = RubyTranspiler;
+      $scope.transpiler = RubyTranspiler;
     }
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;
+
+    // Set query parameter
+    function setQuery() {
+      var queryKeys = [];
+      if ($scope.transpiler === Es2017Transpiler) {
+        queryKeys.push("es2017");
+      }
+      if ($scope.compressionAlg === LZMAAlg) {
+        queryKeys.push("lzma");
+      }
+      // Generate query paramter
+      var query = queryKeys.join("&");
+      location.search = query;
+    }
 
     // Set location.hash
     function setLocationHash() {
@@ -159,20 +185,38 @@ angular.module("nipp", [])
       setOutputText();
     });
 
-    // Watch script changes
-    // (from: https://stackoverflow.com/a/15424144/2885946)
-    $scope.$watch('script', function(){
-      // Set location.hash
-      setLocationHash();
-
+    $scope.transpile = function(){
       try {
         // Transpile script and Set executable function
-        executableFunction = transpiler.getExecutableFunction($scope.script);
+        executableFunction = $scope.transpiler.getExecutableFunction($scope.script);
         // Set output text
         setOutputText();
       } catch (err) {
         console.log("Transpile compile", err);
       }
+    };
+
+    $scope.$watch('transpiler', function(){
+      // Update query parameter
+      setQuery();
+      // Transpile
+      $scope.transpile();
+    });
+
+    $scope.$watch('compressionAlg', function(){
+      // Update location.hash
+      setLocationHash();
+      // Update query parameter
+      setQuery();
+    });
+
+    // Watch script changes
+    // (from: https://stackoverflow.com/a/15424144/2885946)
+    $scope.$watch('script', function(){
+      // Set location.hash
+      setLocationHash();
+      // Transpile
+      $scope.transpile();
     }, true);
 
     function setOutputText(){
