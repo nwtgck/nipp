@@ -1,4 +1,4 @@
-var Deflate = {
+var DeflateAlg = {
   compress: function(str){
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
@@ -9,6 +9,17 @@ var Deflate = {
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
     return pako.inflate(binStr, {to: 'string', windowBits: -8});
+  }
+};
+
+var LZMAAlg = {
+  compress: function(str) {
+    var compressed = LZMA.compress(str, 9);
+    // (from: https://github.com/alcor/itty-bitty/blob/5292c4b7891939dab89412f9e474bca707c9bec5/data.js#L25)
+    return String.fromCharCode.apply(null, new Uint8Array(compressed));
+  },
+  decompress: function(binStr) {
+    return LZMA.decompress(binStr.split('').map(function(c){return c.charCodeAt(0)}));
   }
 };
 
@@ -92,8 +103,13 @@ angular.module("nipp", [])
   .controller('mainCtrl', ['$scope', function($scope){
     // Parse query string
     var locationQuery = URLParse.qs.parse(location.search);
+    // Get query keys
+    var queryKeys = Object.keys(locationQuery);
     // Compression algorithm
-    $scope.compressionAlg = Deflate;
+    $scope.compressionAlg = DeflateAlg;
+    if (queryKeys.includes("lzma")) {
+      $scope.compressionAlg = LZMAAlg;
+    }
     // Get page title and code
     var titleAndCode = parseLocationHash($scope.compressionAlg.decompress);
     // Set page title
@@ -109,8 +125,6 @@ angular.module("nipp", [])
     setOutputText();
     // Set transpiler
     var transpiler;
-    // Get query
-    var queryKeys = Object.keys(locationQuery);
     if (queryKeys.includes("es2017")) {
       console.log("Mode: ES2017");
       transpiler = Es2017Transpiler;
