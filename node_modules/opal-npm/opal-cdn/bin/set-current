@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'pathname'
+
+include FileUtils
+
+def sh *args
+  args = args.map(&:to_s)
+  system *args or raise "command failed: #{args}"
+end
+
+def git *args
+  sh 'git', *args
+end
+
+root = Pathname("#{__dir__}/..").expand_path
+opal = Pathname(ENV['OPAL_REPO'] || root.join('tmp/opal')).expand_path
+version = ARGV.first or raise "missing version, usage: bin/set-current 0.10.0"
+
+rm_rf root.join('opal/current')
+cp_r root.join("opal/#{version}"), root.join('opal/current')
+
+require 'json'
+
+File.write root.join('bower.json'), JSON.pretty_generate(
+  "name": "opal",
+  "version": version,
+  "homepage": "http://opalrb.com",
+  "authors": [
+    "Adam Beynon <adam.beynon@gmail.com>",
+    "Elia Schito <elia@schito.me>",
+    "Meh <meh@schizofreni.co>",
+  ],
+  "description": "Ruby runtime and core library for javascript",
+  "main": "opal/current/opal.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "Ruby",
+    "Javascript",
+    "Compiler"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+)
+
+puts %{
+
+  🚨 Remember to set a tag for Bower e.g.:
+
+      git commit -a
+      git push
+      git tag v#{version}
+      git push --tags
+
+    (see https://bower.io/docs/creating-packages/ for more info)
+
+
+}

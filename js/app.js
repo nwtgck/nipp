@@ -181,10 +181,21 @@ angular.module("nipp", [])
       setLocationHash();
     });
 
-    $scope.$watch('inputText', function(){
+    $scope.onChangeInputText = function(){
       // Set output text
       setOutputText();
-    });
+    };
+
+    $scope.onChangeTranspiler = function(){
+      // Initialize library
+      $scope.transpiler.initLibrary();
+      // Ensure to call once
+      $scope.transpiler.initLibrary = function(){};
+      // Update location.hash
+      setLocationHash();
+      // Transpile
+      $scope.transpile();
+    };
 
     $scope.transpile = function(){
       try {
@@ -196,17 +207,6 @@ angular.module("nipp", [])
         console.log("Transpile compile", err);
       }
     };
-
-    $scope.$watch('transpiler', function(){
-      // Initialize library
-      $scope.transpiler.initLibrary();
-      // Ensure to call once
-      $scope.transpiler.initLibrary = function(){};
-      // Update location.hash
-      setLocationHash();
-      // Transpile
-      $scope.transpile();
-    });
 
     $scope.$watch('compressionAlg', function(){
       // Update location.hash
