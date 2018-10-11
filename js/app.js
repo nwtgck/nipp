@@ -160,7 +160,9 @@ angular.module("nipp", ['ui.ace'])
     // Error string
     $scope.errorStr = "";
     // Whether error string is shown or not
-    $scope.showError = false;
+    $scope.showError = true;
+    // Whether has error or not
+    $scope.hasError = false;
 
     // Generate options part
     function getUrlOptionsPart() {
@@ -219,11 +221,14 @@ angular.module("nipp", ['ui.ace'])
         var executableFunctionAndTraspiledJsCode = $scope.transpiler.getExecutableFunctionAndTranspiledJsCode($scope.script);
         executableFunction = executableFunctionAndTraspiledJsCode.executableFunction;
         $scope.transpiledJsCode = executableFunctionAndTraspiledJsCode.transpiledJsCode;
+        $scope.errorStr = "";
+        $scope.hasError = false;
         // Set output text
         setOutputText();
       } catch (err) {
         console.log("Transpile compile", err);
         $scope.errorStr = err.toString();
+        $scope.hasError = true;
       }
     };
 
@@ -250,9 +255,11 @@ angular.module("nipp", ['ui.ace'])
         $scope.outputText = output;
         // Set no error
         $scope.errorStr = "";
+        $scope.hasError = false;
       } catch (err) {
         console.log("JS Runtime error", err);
         $scope.errorStr = err.toString();
+        $scope.hasError = true;
       }
     }
 
