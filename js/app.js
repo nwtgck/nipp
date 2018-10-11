@@ -53,7 +53,7 @@ var RubyTranspiler = {
     Opal.load('opal');
     Opal.load('opal-parser');
   },
-  getExecutableFunction: function(rubyScript){
+  getExecutableFunctionAndTranspiledJsCode: function(rubyScript){
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
     var rubyScriptWithInput = 's = `window.INPUT`\n' + rubyScript;
@@ -63,7 +63,10 @@ var RubyTranspiler = {
     transpiledJsCode = transpiledJsCode.replace(/\/\*.*\*\/\s*/, '');
     // Set executable function
     var executableFunction = new Function("return " + transpiledJsCode);
-    return executableFunction;
+    return {
+      executableFunction: executableFunction,
+      transpiledJsCode: transpiledJsCode
+    };
   }
 }
 
@@ -71,14 +74,17 @@ var Es2017Transpiler = {
   name: "ES2017",
   aceEditorMode: "javascript",
   initLibrary: function(){},
-  getExecutableFunction: function(script){
+  getExecutableFunctionAndTranspiledJsCode: function(script){
     // Use javascript global variable "INPUT" 
     // (NOTE: `INPUT` will be pure JavaScript string variable)    
     var scriptWithInput = 'var s = window.INPUT;\n' + script;
     // Transpile
     var code = Babel.transform(scriptWithInput, {presets: ["es2017"]}).code;
-    return function(){
-      return eval(code);
+    return {
+      executableFunction: function(){
+        return eval(code);
+      },
+      transpiledJsCode: code
     };
   }
 }
@@ -130,6 +136,10 @@ angular.module("nipp", ['ui.ace'])
     $scope.inputText  = "";
     // Set decoded location.hash as default script
     $scope.script = decodeCode(titleAndCode.encodedCode, $scope.compressionAlg.decompress);
+    // Generated JavaScript code
+    $scope.transpiledJsCode = "";
+    // Whether transpiled JS code is shown or not
+    $scope.showTranspiledJsCode = false;
     // Executable function which return result
     var executableFunction = function(){return "";};
     // Set default output
@@ -202,7 +212,9 @@ angular.module("nipp", ['ui.ace'])
     $scope.transpile = function(){
       try {
         // Transpile script and Set executable function
-        executableFunction = $scope.transpiler.getExecutableFunction($scope.script);
+        var executableFunctionAndTraspiledJsCode = $scope.transpiler.getExecutableFunctionAndTranspiledJsCode($scope.script);
+        executableFunction = executableFunctionAndTraspiledJsCode.executableFunction;
+        $scope.transpiledJsCode = executableFunctionAndTraspiledJsCode.transpiledJsCode;
         // Set output text
         setOutputText();
       } catch (err) {
@@ -246,4 +258,8 @@ angular.module("nipp", ['ui.ace'])
     $scope.onLoadScriptEditor = function(editor) {
       editor.setFontSize(14);
     };
+
+    $scope.setShowTranspiledJsCode = function(b) {
+      $scope.showTranspiledJsCode = b;
+    }
   }]);
