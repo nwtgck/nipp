@@ -1,7 +1,7 @@
 {
   "name": "nipp",
-  "version": "0.3.0",
-  "description": "URL hosted Mini Application",
+  "version": "0.4.0",
+  "description": "Mini Application Hosted on URL",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "bower install",
@@ -23,6 +23,7 @@
     "lzma": "^2.3.2",
     "opal": "^0.6.4",
     "pako": "^1.0.6",
+    "purecss": "^1.0.0",
     "url-parse": "^1.4.3"
   },
   "devDependencies": {

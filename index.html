@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!--<!DOCTYPE html>-->
 <html ng-app="nipp">
   <head>
     <meta charset="utf-8">
@@ -24,19 +24,32 @@
 
     <!-- Babel (standalone) -->
     <script defer src="node_modules/@babel/standalone/babel.min.js"></script>
+
+    <!-- Pure.css -->
+    <link rel="stylesheet" href="node_modules/purecss/build/pure-min.css">
+    <link rel="stylesheet" href="node_modules/purecss/build/grids-responsive-min.css">
   </head>
   <body>
     <div ng-controller="mainCtrl">
-      <textarea ng-model="script" placeholder="Script: (e.g. 140 - s.size)" cols="30" rows="10"></textarea>
-      <textarea ng-model="inputText" ng-change="onChangeInputText()" placeholder="Input" cols="30" rows="10"></textarea>
-      <textarea ng-value="outputText" placeholder="Output" cols="30" rows="10"></textarea><br>
-      <input type="text" ng-model="pageTitle" placeholder="Page title">
 
+      <div class="pure-g">
+        <input type="text" ng-model="pageTitle" placeholder="Page title" class="pure-u-1">
+      </div>
+
+      <div class="pure-g">
+        <textarea ng-model="script" placeholder="Script: (e.g. 140 - s.size)" rows="10" class="pure-u-1"></textarea>
+      </div>
       <select ng-options="t.name for t in transpilers" ng-change="onChangeTranspiler()" ng-model="transpiler">
       </select>
 
       <select ng-options="a.name for a in compressionAlgs" ng-model="compressionAlg">
       </select>
+
+      <div class="pure-g">
+        <textarea ng-model="inputText" ng-change="onChangeInputText()" placeholder="Input" rows="10" class="pure-u-1 pure-u-md-1-2"></textarea>
+        <textarea ng-value="outputText" placeholder="Output" rows="10" class="pure-u-1 pure-u-md-1-2"></textarea>
+      </div>
+
     </div>
   </body>
 </html>
