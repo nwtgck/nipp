@@ -157,6 +157,10 @@ angular.module("nipp", ['ui.ace'])
     $scope.transpiler.initLibrary();
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;
+    // Error string
+    $scope.errorStr = "";
+    // Whether error string is shown or not
+    $scope.showError = false;
 
     // Generate options part
     function getUrlOptionsPart() {
@@ -219,6 +223,7 @@ angular.module("nipp", ['ui.ace'])
         setOutputText();
       } catch (err) {
         console.log("Transpile compile", err);
+        $scope.errorStr = err.toString();
       }
     };
 
@@ -241,12 +246,15 @@ angular.module("nipp", ['ui.ace'])
       window.INPUT = $scope.inputText;
       try {
         var output = executableFunction();
+        // Set output text
+        $scope.outputText = output;
+        // Set no error
+        $scope.errorStr = "";
       } catch (err) {
-        console.log("JS Runtime error", err)
+        console.log("JS Runtime error", err);
+        $scope.errorStr = err.toString();
       }
-      // Set output text
-      $scope.outputText = output;
-    };
+    }
 
     $scope.shareOnTwitter = function(){
       // (from: http://d.hatena.ne.jp/osyo-manga/20140717/1405626111)
@@ -261,5 +269,9 @@ angular.module("nipp", ['ui.ace'])
 
     $scope.setShowTranspiledJsCode = function(b) {
       $scope.showTranspiledJsCode = b;
-    }
+    };
+
+    $scope.setShowError = function(b) {
+      $scope.showError = b;
+    };
   }]);
