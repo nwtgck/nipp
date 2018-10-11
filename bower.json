@@ -1,6 +1,7 @@
 {
   "name": "dummy_because_this_is_mainly_managed_by_npm",
   "dependencies": {
-    "opal": "^0.11.3"
+    "opal": "^0.11.3",
+    "angular-ui-ace": "bower"
   }
 }
