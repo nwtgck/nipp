@@ -23,7 +23,8 @@
 
     <!-- AngularJS -->
     <script defer src="node_modules/angular/angular.min.js"></script>
-    <script defer src="bower_components/angular-ui-ace/ui-ace.min.js"></script>
+    <!-- NOTE: Don't use "angular-ui/ui-ace" because 0.2.3 has bug in Android Chrome (after typing ng-model is empty) -->
+    <script defer src="node_modules/ace-angular/ace-angular.js"></script>
     <script defer src="js/app.js"></script>
 
     <!-- Babel (standalone) -->
@@ -45,7 +46,7 @@
 
       <div class="pure-g">
         <div class="pure-u-1">
-          <div ui-ace="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode}" style="height:10em" ng-model="script"></div>
+          <div ace-editor="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode}" style="height:10em" ng-model="script"></div>
         </div>
       </div>
       <select ng-options="t.name for t in transpilers" ng-change="onChangeTranspiler()" ng-model="transpiler">

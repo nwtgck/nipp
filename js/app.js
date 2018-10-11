@@ -115,7 +115,7 @@ function parseLocationHash() {
   }
 }
 
-angular.module("nipp", ['ui.ace'])
+angular.module("nipp", ['ace.angular'])
   // NOTE: Don't use $location.hash() because it escapes "/"
   .controller('mainCtrl', ['$scope', function($scope){
     // Get page title and code
