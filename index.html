@@ -57,7 +57,7 @@
         <textarea ng-value="outputText" placeholder="Output" rows="10" class="pure-u-1 pure-u-md-1-2"></textarea>
       </div>
 
-      <button ng-click="setShowError(!showError)">Show/Hide error</button>
+      <button ng-click="setShowError(!showError)" ng-style="{color: hasError? 'red': ''}">Show/Hide error</button>
       <span ng-if="showError">
         <div class="pure-g">
           <textarea class="pure-u-1" ng-model="errorStr"></textarea>
