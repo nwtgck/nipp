@@ -28,9 +28,15 @@
   <body>
     <div ng-controller="mainCtrl">
       <textarea ng-model="script" placeholder="Script: (e.g. 140 - s.size)" cols="30" rows="10"></textarea>
-      <textarea ng-model="inputText" placeholder="Input" cols="30" rows="10"></textarea>
+      <textarea ng-model="inputText" ng-change="onChangeInputText()" placeholder="Input" cols="30" rows="10"></textarea>
       <textarea ng-value="outputText" placeholder="Output" cols="30" rows="10"></textarea><br>
       <input type="text" ng-model="pageTitle" placeholder="Page title">
+
+      <select ng-options="t.name for t in transpilers" ng-change="onChangeTranspiler()" ng-model="transpiler">
+      </select>
+
+      <select ng-options="a.name for a in compressionAlgs" ng-model="compressionAlg">
+      </select>
     </div>
   </body>
 </html>

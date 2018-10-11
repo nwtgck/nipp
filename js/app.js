@@ -1,4 +1,5 @@
 var DeflateAlg = {
+  name: "Deflate",
   compress: function(str){
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
@@ -13,6 +14,7 @@ var DeflateAlg = {
 };
 
 var LZMAAlg = {
+  name: "LZMA",
   compress: function(str) {
     var compressed = LZMA.compress(str, 9);
     // (from: https://github.com/alcor/itty-bitty/blob/5292c4b7891939dab89412f9e474bca707c9bec5/data.js#L25)
@@ -45,6 +47,11 @@ function decodeCode(encodedCode, decompressor) {
 }
 
 var RubyTranspiler = {
+  name: "Ruby",
+  initLibrary: function(){
+    Opal.load('opal');
+    Opal.load('opal-parser');
+  },
   getExecutableFunction: function(rubyScript){
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
@@ -60,6 +67,8 @@ var RubyTranspiler = {
 }
 
 var Es2017Transpiler = {
+  name: "ES2017",
+  initLibrary: function(){},
   getExecutableFunction: function(script){
     // Use javascript global variable "INPUT" 
     // (NOTE: `INPUT` will be pure JavaScript string variable)    
@@ -72,79 +81,97 @@ var Es2017Transpiler = {
   }
 }
 
-// Setup opal
-var setupOpal = function(){
-  Opal.load('opal');
-  Opal.load('opal-parser');
-};
 
 // Parse location.hash and return page title and code
-function parseLocationHash(decompressor) {
-  // Find "/" in location.hash
-  var slashIdx = location.hash.indexOf("/")
-  // If "/" not found
-  if(slashIdx === -1){
-    slashIdx = location.hash.length
+function parseLocationHash() {
+  // Split by "/"
+  var splited = location.hash.split("/");
+  if(splited.length >= 3) {
+    // Get title
+    var title = decodeURI(splited[0].substring(1).replace(/_/g, " "));
+    // Get URL options
+    var urlOptions = splited[1].split(",");
+    // Get encoded code
+    var encodedCode = splited.slice(2, splited.length).join("/");
+    return {
+      pageTitle: title,
+      urlOptions: urlOptions,
+      encodedCode: encodedCode
+    };
+  } else {
+    return {
+      pageTitle: "",
+      urlOptions: [],
+      encodedCode: ""
+    }
   }
-  // Get page title
-  var title = decodeURI((location.hash.substring(1, slashIdx)).replace(/_/g, " "));
-  // Get encoded code
-  var encodedCode = location.hash.substring(slashIdx+1, location.hash.length)
-  // Get code
-  var code = decodeCode(encodedCode, decompressor);
-  return {
-    pageTitle: title,
-    code: code
-  };
 }
 
 angular.module("nipp", [])
   // NOTE: Don't use $location.hash() because it escapes "/"
   .controller('mainCtrl', ['$scope', function($scope){
-    // Parse query string
-    var locationQuery = URLParse.qs.parse(location.search);
-    // Get query keys
-    var queryKeys = Object.keys(locationQuery);
+    // Get page title and code
+    var titleAndCode = parseLocationHash();
+    $scope.compressionAlgs = [
+      DeflateAlg,
+      LZMAAlg
+    ];
     // Compression algorithm
-    $scope.compressionAlg = DeflateAlg;
-    if (queryKeys.includes("lzma")) {
+    $scope.compressionAlg = $scope.compressionAlgs[0];
+    if (titleAndCode.urlOptions.includes("lzma")) {
       $scope.compressionAlg = LZMAAlg;
     }
-    // Get page title and code
-    var titleAndCode = parseLocationHash($scope.compressionAlg.decompress);
     // Set page title
     $scope.pageTitle = titleAndCode.pageTitle;
     document.title   = titleAndCode.pageTitle;
     // Set empty string as default input
     $scope.inputText  = "";
     // Set decoded location.hash as default script
-    $scope.script = titleAndCode.code;
+    $scope.script = decodeCode(titleAndCode.encodedCode, $scope.compressionAlg.decompress);
     // Executable function which return result
     var executableFunction = function(){return "";};
     // Set default output
     setOutputText();
+    $scope.transpilers = [
+      RubyTranspiler,
+      Es2017Transpiler
+    ];
     // Set transpiler
-    var transpiler;
-    if (queryKeys.includes("es2017")) {
-      console.log("Mode: ES2017");
-      transpiler = Es2017Transpiler;
-    } else {
-      console.log("Mode: Opal");
-      // Setup Opal
-      setupOpal();
-      // Ensure to call once
-      setupOpal = function(){};
-      transpiler = RubyTranspiler;
+    $scope.transpiler = RubyTranspiler;
+    if (titleAndCode.urlOptions.includes("es2017")) {
+      $scope.transpiler = Es2017Transpiler;
     }
+    // Initialize library
+    $scope.transpiler.initLibrary();
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;
 
+    // Generate options part
+    function getUrlOptionsPart() {
+      var options = [];
+      // (NOTE: transpiler:ruby is default so it should be pushed)
+      if ($scope.transpiler === Es2017Transpiler) {
+        options.push("es2017");
+      }
+      // (NOTE: compression:deflate is default so it should be pushed)
+      if ($scope.compressionAlg === LZMAAlg) {
+        options.push("lzma");
+      }
+      // Generate options part
+      var options = options.join(",");
+      return options;
+    }
+
     // Set location.hash
     function setLocationHash() {
+      // Create title part
+      var titlePart = ($scope.pageTitle).replace(/ /g, "_");
+      // Create options part
+      var urlOptionsPart = getUrlOptionsPart();
       // Encode code
       var encodedCode = encodeCode($scope.script, $scope.compressionAlg.compress);
       // Change location hash to the code
-      location.hash = ($scope.pageTitle).replace(/ /g, "_")+"/"+encodedCode;
+      location.hash = titlePart+"/"+urlOptionsPart+"/"+encodedCode;
     }
 
     $scope.$watch("pageTitle", function(){
@@ -154,9 +181,36 @@ angular.module("nipp", [])
       setLocationHash();
     });
 
-    $scope.$watch('inputText', function(){
+    $scope.onChangeInputText = function(){
       // Set output text
       setOutputText();
+    };
+
+    $scope.onChangeTranspiler = function(){
+      // Initialize library
+      $scope.transpiler.initLibrary();
+      // Ensure to call once
+      $scope.transpiler.initLibrary = function(){};
+      // Update location.hash
+      setLocationHash();
+      // Transpile
+      $scope.transpile();
+    };
+
+    $scope.transpile = function(){
+      try {
+        // Transpile script and Set executable function
+        executableFunction = $scope.transpiler.getExecutableFunction($scope.script);
+        // Set output text
+        setOutputText();
+      } catch (err) {
+        console.log("Transpile compile", err);
+      }
+    };
+
+    $scope.$watch('compressionAlg', function(){
+      // Update location.hash
+      setLocationHash();
     });
 
     // Watch script changes
@@ -164,15 +218,8 @@ angular.module("nipp", [])
     $scope.$watch('script', function(){
       // Set location.hash
       setLocationHash();
-
-      try {
-        // Transpile script and Set executable function
-        executableFunction = transpiler.getExecutableFunction($scope.script);
-        // Set output text
-        setOutputText();
-      } catch (err) {
-        console.log("Transpile compile", err);
-      }
+      // Transpile
+      $scope.transpile();
     }, true);
 
     function setOutputText(){
