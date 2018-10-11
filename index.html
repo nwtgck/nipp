@@ -25,6 +25,9 @@
     <!-- Babel (standalone) -->
     <script defer src="node_modules/@babel/standalone/babel.min.js"></script>
 
+    <!-- Twitter -->
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
     <!-- Pure.css -->
     <link rel="stylesheet" href="node_modules/purecss/build/pure-min.css">
     <link rel="stylesheet" href="node_modules/purecss/build/grids-responsive-min.css">
@@ -33,7 +36,9 @@
     <div ng-controller="mainCtrl">
 
       <div class="pure-g">
-        <input type="text" ng-model="pageTitle" placeholder="Page title" class="pure-u-1">
+        <input type="text" ng-model="pageTitle" placeholder="Page title" class="pure-u-11-12">
+        <!--<button class="pure-u-1-12" ng-click="window.open('https://twitter.com/share?text=' + encodeURIComponent('fff'),'','scrollbars=yes,width=500,height=300,');">Twitter</button>-->
+        <button class="pure-u-1-12" ng-click="shareOnTwitter()">Twitter</button>
       </div>
 
       <div class="pure-g">

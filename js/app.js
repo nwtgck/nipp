@@ -233,4 +233,10 @@ angular.module("nipp", [])
       // Set output text
       $scope.outputText = output;
     };
+
+    $scope.shareOnTwitter = function(){
+      // (from: http://d.hatena.ne.jp/osyo-manga/20140717/1405626111)
+      var url = 'https://twitter.com/share?text='+encodeURIComponent($scope.pageTitle)+"&url=" + encodeURIComponent(location.href);
+      window.open(url,'','scrollbars=yes,width=500,height=300,');
+    };
   }]);
