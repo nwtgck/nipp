@@ -18,8 +18,12 @@
     <!-- LZMA -->
     <script defer src="node_modules/lzma/src/lzma_worker-min.js"></script>
 
+    <!--  Ace editor -->
+    <script defer src="node_modules/ace-builds/src-min-noconflict/ace.js"></script>
+
     <!-- AngularJS -->
     <script defer src="node_modules/angular/angular.min.js"></script>
+    <script defer src="bower_components/angular-ui-ace/ui-ace.min.js"></script>
     <script defer src="js/app.js"></script>
 
     <!-- Babel (standalone) -->
@@ -38,7 +42,9 @@
       </div>
 
       <div class="pure-g">
-        <textarea ng-model="script" placeholder="Script: (e.g. 140 - s.size)" rows="10" class="pure-u-1"></textarea>
+        <div class="pure-u-1">
+          <div ui-ace="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode}" style="height:10em" ng-model="script"></div>
+        </div>
       </div>
       <select ng-options="t.name for t in transpilers" ng-change="onChangeTranspiler()" ng-model="transpiler">
       </select>

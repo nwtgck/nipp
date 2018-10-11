@@ -48,6 +48,7 @@ function decodeCode(encodedCode, decompressor) {
 
 var RubyTranspiler = {
   name: "Ruby",
+  aceEditorMode: "ruby",
   initLibrary: function(){
     Opal.load('opal');
     Opal.load('opal-parser');
@@ -68,6 +69,7 @@ var RubyTranspiler = {
 
 var Es2017Transpiler = {
   name: "ES2017",
+  aceEditorMode: "javascript",
   initLibrary: function(){},
   getExecutableFunction: function(script){
     // Use javascript global variable "INPUT" 
@@ -107,7 +109,7 @@ function parseLocationHash() {
   }
 }
 
-angular.module("nipp", [])
+angular.module("nipp", ['ui.ace'])
   // NOTE: Don't use $location.hash() because it escapes "/"
   .controller('mainCtrl', ['$scope', function($scope){
     // Get page title and code
@@ -238,5 +240,10 @@ angular.module("nipp", [])
       // (from: http://d.hatena.ne.jp/osyo-manga/20140717/1405626111)
       var url = 'https://twitter.com/share?text='+encodeURIComponent($scope.pageTitle)+"&url=" + encodeURIComponent(location.href);
       window.open(url,'','scrollbars=yes,width=500,height=300,');
+    };
+
+    // Script editor onload
+    $scope.onLoadScriptEditor = function(editor) {
+      editor.setFontSize(14);
     };
   }]);

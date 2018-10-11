@@ -19,6 +19,7 @@
   "homepage": "https://github.com/nwtgck/nipp#readme",
   "dependencies": {
     "@babel/standalone": "^7.1.0",
+    "ace-builds": "^1.4.1",
     "angular": "^1.7.5",
     "lzma": "^2.3.2",
     "opal": "^0.6.4",
