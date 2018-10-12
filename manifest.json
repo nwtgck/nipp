@@ -1,0 +1,24 @@
+{
+  "name": "Nipp",
+  "short_name": "Nipp",
+  "background_color": "#ffce89",
+  "icons": [
+    {
+      "src": "images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "minimal-ui"
+}
