@@ -1,4 +1,6 @@
 # nipp
+<img src="images/nipp-logo.svg" width="100">
+
 Mini Application Hosted on URL <https://nipp.cf/>  
 Nipp is inspired by [itty.bitty](https://github.com/alcor/itty-bitty).
 
