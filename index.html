@@ -1,7 +1,17 @@
-<!DOCTYPE html>
+<!--<!DOCTYPE html>-->
 <html ng-app="nipp">
   <head>
     <meta charset="utf-8">
+    <!-- Load manifest.json for PWA -->
+    <link rel="manifest" href="./manifest.json">
+    <script>
+      // Register server-worker.js when service worker is available
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./service-worker.js').then(function(){
+          console.log('Service Worker Registered');
+        });
+      }
+    </script>
     <title>nipp</title>
     <meta name="description" content="URL Hosted Mini Application">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,25 +28,64 @@
     <!-- LZMA -->
     <script defer src="node_modules/lzma/src/lzma_worker-min.js"></script>
 
+    <!--  Ace editor -->
+    <script defer src="node_modules/ace-builds/src-min-noconflict/ace.js"></script>
+
     <!-- AngularJS -->
     <script defer src="node_modules/angular/angular.min.js"></script>
+    <!-- NOTE: Don't use "angular-ui/ui-ace" because 0.2.3 has bug in Android Chrome (after typing ng-model is empty) -->
+    <script defer src="node_modules/ace-angular/ace-angular.js"></script>
     <script defer src="js/app.js"></script>
 
     <!-- Babel (standalone) -->
     <script defer src="node_modules/@babel/standalone/babel.min.js"></script>
+
+    <!-- Pure.css -->
+    <link rel="stylesheet" href="node_modules/purecss/build/pure-min.css">
+    <link rel="stylesheet" href="node_modules/purecss/build/grids-responsive-min.css">
   </head>
   <body>
     <div ng-controller="mainCtrl">
-      <textarea ng-model="script" placeholder="Script: (e.g. 140 - s.size)" cols="30" rows="10"></textarea>
-      <textarea ng-model="inputText" ng-change="onChangeInputText()" placeholder="Input" cols="30" rows="10"></textarea>
-      <textarea ng-value="outputText" placeholder="Output" cols="30" rows="10"></textarea><br>
-      <input type="text" ng-model="pageTitle" placeholder="Page title">
 
+      <div class="pure-g">
+        <input type="text" ng-model="pageTitle" placeholder="Page title" class="pure-u-11-12">
+        <div class="pure-u-1-12" style="text-align: center">
+          <img src="images/twitter.png" alt="Share on Twitter" ng-click="shareOnTwitter()" style="width: 2em; height: 2em;">
+        </div>
+      </div>
+
+      <div class="pure-g">
+        <div class="pure-u-1">
+          <div ace-editor="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode}" style="height:10em" ng-model="script"></div>
+        </div>
+      </div>
       <select ng-options="t.name for t in transpilers" ng-change="onChangeTranspiler()" ng-model="transpiler">
       </select>
 
       <select ng-options="a.name for a in compressionAlgs" ng-model="compressionAlg">
       </select>
-    </div>
+
+      <div class="pure-g">
+        <textarea ng-model="inputText" ng-change="onChangeInputText()" placeholder="Input" rows="10" class="pure-u-1 pure-u-md-1-2"></textarea>
+        <textarea ng-value="outputText" placeholder="Output" rows="10" class="pure-u-1 pure-u-md-1-2"></textarea>
+      </div>
+
+      <button ng-click="setShowError(!showError)" ng-style="{color: hasError? 'red': ''}">Show/Hide error</button>
+      <span ng-if="showError">
+        <div class="pure-g">
+          <textarea class="pure-u-1" ng-model="errorStr"></textarea>
+        </div>
+      </span>
+
+      <button ng-click="setShowTranspiledJsCode(!showTranspiledJsCode)">Show/Hide transpiled JS code</button>
+      <span ng-if="showTranspiledJsCode">
+        <div class="pure-g">
+          <div class="pure-u-1">
+            <div ace-editor="{mode: 'javascript'}" style="height:10em" ng-model="transpiledJsCode"></div>
+          </div>
+        </div>
+      </span>
+
+
   </body>
 </html>

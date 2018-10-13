@@ -48,11 +48,12 @@ function decodeCode(encodedCode, decompressor) {
 
 var RubyTranspiler = {
   name: "Ruby",
+  aceEditorMode: "ruby",
   initLibrary: function(){
     Opal.load('opal');
     Opal.load('opal-parser');
   },
-  getExecutableFunction: function(rubyScript){
+  getExecutableFunctionAndTranspiledJsCode: function(rubyScript){
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
     var rubyScriptWithInput = 's = `window.INPUT`\n' + rubyScript;
@@ -62,21 +63,28 @@ var RubyTranspiler = {
     transpiledJsCode = transpiledJsCode.replace(/\/\*.*\*\/\s*/, '');
     // Set executable function
     var executableFunction = new Function("return " + transpiledJsCode);
-    return executableFunction;
+    return {
+      executableFunction: executableFunction,
+      transpiledJsCode: transpiledJsCode
+    };
   }
 }
 
 var Es2017Transpiler = {
   name: "ES2017",
+  aceEditorMode: "javascript",
   initLibrary: function(){},
-  getExecutableFunction: function(script){
+  getExecutableFunctionAndTranspiledJsCode: function(script){
     // Use javascript global variable "INPUT" 
     // (NOTE: `INPUT` will be pure JavaScript string variable)    
     var scriptWithInput = 'var s = window.INPUT;\n' + script;
     // Transpile
     var code = Babel.transform(scriptWithInput, {presets: ["es2017"]}).code;
-    return function(){
-      return eval(code);
+    return {
+      executableFunction: function(){
+        return eval(code);
+      },
+      transpiledJsCode: code
     };
   }
 }
@@ -107,7 +115,7 @@ function parseLocationHash() {
   }
 }
 
-angular.module("nipp", [])
+angular.module("nipp", ['ace.angular'])
   // NOTE: Don't use $location.hash() because it escapes "/"
   .controller('mainCtrl', ['$scope', function($scope){
     // Get page title and code
@@ -128,6 +136,10 @@ angular.module("nipp", [])
     $scope.inputText  = "";
     // Set decoded location.hash as default script
     $scope.script = decodeCode(titleAndCode.encodedCode, $scope.compressionAlg.decompress);
+    // Generated JavaScript code
+    $scope.transpiledJsCode = "";
+    // Whether transpiled JS code is shown or not
+    $scope.showTranspiledJsCode = false;
     // Executable function which return result
     var executableFunction = function(){return "";};
     // Set default output
@@ -145,6 +157,12 @@ angular.module("nipp", [])
     $scope.transpiler.initLibrary();
     // Set default value to global variable "INPUT"
     window.INPUT = $scope.inputText;
+    // Error string
+    $scope.errorStr = "";
+    // Whether error string is shown or not
+    $scope.showError = true;
+    // Whether has error or not
+    $scope.hasError = false;
 
     // Generate options part
     function getUrlOptionsPart() {
@@ -200,11 +218,17 @@ angular.module("nipp", [])
     $scope.transpile = function(){
       try {
         // Transpile script and Set executable function
-        executableFunction = $scope.transpiler.getExecutableFunction($scope.script);
+        var executableFunctionAndTraspiledJsCode = $scope.transpiler.getExecutableFunctionAndTranspiledJsCode($scope.script);
+        executableFunction = executableFunctionAndTraspiledJsCode.executableFunction;
+        $scope.transpiledJsCode = executableFunctionAndTraspiledJsCode.transpiledJsCode;
+        $scope.errorStr = "";
+        $scope.hasError = false;
         // Set output text
         setOutputText();
       } catch (err) {
         console.log("Transpile compile", err);
+        $scope.errorStr = err.toString();
+        $scope.hasError = true;
       }
     };
 
@@ -227,10 +251,34 @@ angular.module("nipp", [])
       window.INPUT = $scope.inputText;
       try {
         var output = executableFunction();
+        // Set output text
+        $scope.outputText = output;
+        // Set no error
+        $scope.errorStr = "";
+        $scope.hasError = false;
       } catch (err) {
-        console.log("JS Runtime error", err)
+        console.log("JS Runtime error", err);
+        $scope.errorStr = err.toString();
+        $scope.hasError = true;
       }
-      // Set output text
-      $scope.outputText = output;
+    }
+
+    $scope.shareOnTwitter = function(){
+      // (from: http://d.hatena.ne.jp/osyo-manga/20140717/1405626111)
+      var url = 'https://twitter.com/share?text='+encodeURIComponent($scope.pageTitle+" #nipp")+"&url=" + encodeURIComponent(location.href);
+      window.open(url,'','scrollbars=yes,width=500,height=300,');
+    };
+
+    // Script editor onload
+    $scope.onLoadScriptEditor = function(editor) {
+      editor.setFontSize(14);
+    };
+
+    $scope.setShowTranspiledJsCode = function(b) {
+      $scope.showTranspiledJsCode = b;
+    };
+
+    $scope.setShowError = function(b) {
+      $scope.showError = b;
     };
   }]);

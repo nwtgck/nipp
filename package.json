@@ -1,6 +1,6 @@
 {
   "name": "nipp",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Mini Application Hosted on URL",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -19,10 +19,13 @@
   "homepage": "https://github.com/nwtgck/nipp#readme",
   "dependencies": {
     "@babel/standalone": "^7.1.0",
+    "ace-angular": "^0.1.1",
+    "ace-builds": "^1.4.1",
     "angular": "^1.7.5",
     "lzma": "^2.3.2",
     "opal": "^0.6.4",
     "pako": "^1.0.6",
+    "purecss": "^1.0.0",
     "url-parse": "^1.4.3"
   },
   "devDependencies": {
