@@ -265,7 +265,7 @@ angular.module("nipp", ['ace.angular'])
 
     $scope.shareOnTwitter = function(){
       // (from: http://d.hatena.ne.jp/osyo-manga/20140717/1405626111)
-      var url = 'https://twitter.com/share?text='+encodeURIComponent($scope.pageTitle+" #nipp")+"&url=" + encodeURIComponent(location.href);
+      var url = 'https://twitter.com/share?text='+encodeURIComponent($scope.pageTitle)+"&url=" + encodeURIComponent(location.href)+"&hashtags=nipp";
       window.open(url,'','scrollbars=yes,width=500,height=300,');
     };
 
