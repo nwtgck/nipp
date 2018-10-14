@@ -45,7 +45,7 @@
     <link rel="stylesheet" href="node_modules/purecss/build/grids-responsive-min.css">
 
     <style>
-      .pure-form {
+      .pure-form, .pure-form-aligned {
         /* Remove margin-button of pure-form */
         margin-bottom: 0;
       }
@@ -53,7 +53,6 @@
   </head>
   <body>
     <div ng-controller="mainCtrl">
-
       <form class="pure-form pure-g">
         <input type="text" ng-model="pageTitle" placeholder="Page title" class="pure-u-11-12">
         <div class="pure-u-1-12" style="text-align: center">
@@ -66,12 +65,14 @@
           <div ace-editor="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode}" style="height:10em" ng-model="script"></div>
         </div>
       </div>
-      <form class="pure-form">
-      <select ng-options="t.name for t in transpilers" ng-change="onChangeTranspiler()" ng-model="transpiler" class="pure-input-1-5">
-      </select>
+      <form class="pure-form pure-form-aligned">
+        <label for="transpiler">Transpiler:</label>
+        <select id="transpiler" ng-options="t.name for t in transpilers" ng-change="onChangeTranspiler()" ng-model="transpiler">
+        </select>
 
-      <select ng-options="a.name for a in compressionAlgs" ng-model="compressionAlg" class="pure-input-1-5">
-      </select>
+        <label for="compression_alg">Compression:</label>
+        <select id="compression_alg" ng-options="a.name for a in compressionAlgs" ng-model="compressionAlg">
+        </select>
       </form>
 
       <form class="pure-form pure-g">
@@ -94,7 +95,5 @@
           </div>
         </div>
       </span>
-
-
   </body>
 </html>
