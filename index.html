@@ -43,41 +43,51 @@
     <!-- Pure.css -->
     <link rel="stylesheet" href="node_modules/purecss/build/pure-min.css">
     <link rel="stylesheet" href="node_modules/purecss/build/grids-responsive-min.css">
+
+    <style>
+      .pure-form, .pure-form-aligned {
+        /* Remove margin-button of pure-form */
+        margin-bottom: 0;
+      }
+    </style>
   </head>
   <body>
     <div ng-controller="mainCtrl">
-
-      <div class="pure-g">
+      <form class="pure-form pure-g">
         <input type="text" ng-model="pageTitle" placeholder="Page title" class="pure-u-11-12">
         <div class="pure-u-1-12" style="text-align: center">
           <img src="images/twitter.png" alt="Share on Twitter" ng-click="shareOnTwitter()" style="width: 2em; height: 2em;">
         </div>
-      </div>
+      </form>
 
       <div class="pure-g">
         <div class="pure-u-1">
           <div ace-editor="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode}" style="height:10em" ng-model="script"></div>
         </div>
       </div>
-      <select ng-options="t.name for t in transpilers" ng-change="onChangeTranspiler()" ng-model="transpiler">
-      </select>
+      <form class="pure-form pure-form-aligned">
+        <label for="transpiler">Transpiler:</label>
+        <select id="transpiler" ng-options="t.name for t in transpilers" ng-change="onChangeTranspiler()" ng-model="transpiler">
+        </select>
 
-      <select ng-options="a.name for a in compressionAlgs" ng-model="compressionAlg">
-      </select>
+        <label for="compression_alg">Compression:</label>
+        <select id="compression_alg" ng-options="a.name for a in compressionAlgs" ng-model="compressionAlg">
+        </select>
+      </form>
 
-      <div class="pure-g">
+      <form class="pure-form pure-g">
         <textarea ng-model="inputText" ng-change="onChangeInputText()" placeholder="Input" rows="10" class="pure-u-1 pure-u-md-1-2"></textarea>
         <textarea ng-value="outputText" placeholder="Output" rows="10" class="pure-u-1 pure-u-md-1-2"></textarea>
-      </div>
+      </form>
 
-      <button ng-click="setShowError(!showError)" ng-style="{color: hasError? 'red': ''}">Show/Hide error</button>
+      <button ng-click="setShowError(!showError)" ng-style="{color: hasError? 'red': ''}" class="pure-button">Show/Hide error</button>
       <span ng-if="showError">
         <div class="pure-g">
           <textarea class="pure-u-1" ng-model="errorStr"></textarea>
         </div>
       </span>
 
-      <button ng-click="setShowTranspiledJsCode(!showTranspiledJsCode)">Show/Hide transpiled JS code</button>
+      <button ng-click="setShowTranspiledJsCode(!showTranspiledJsCode)" class="pure-button">Show/Hide transpiled JS code</button>
       <span ng-if="showTranspiledJsCode">
         <div class="pure-g">
           <div class="pure-u-1">
@@ -85,7 +95,5 @@
           </div>
         </div>
       </span>
-
-
   </body>
 </html>
