@@ -87,7 +87,26 @@ var Es2017Transpiler = {
       transpiledJsCode: code
     };
   }
-}
+};
+
+var FuncEs2017Transpiler = {
+  name: "ES2017 with Function",
+  aceEditorMode: "javascript",
+  initLibrary: function(){},
+  getExecutableFunctionAndTranspiledJsCode: function(script){
+    // Use javascript global variable "INPUT"
+    // (NOTE: `INPUT` will be pure JavaScript string variable)
+    var scriptWithInput = 'var s = window.INPUT;\n' + script;
+    // Transpile
+    var code = Babel.transform(scriptWithInput, {presets: ["es2017"]}).code;
+    // Generate executable function
+    var executableFunction = new Function(code);
+    return {
+      executableFunction: executableFunction,
+      transpiledJsCode: code
+    };
+  }
+};
 
 
 // Parse location.hash and return page title and code
@@ -146,12 +165,15 @@ angular.module("nipp", ['ace.angular'])
     setOutputText();
     $scope.transpilers = [
       RubyTranspiler,
-      Es2017Transpiler
+      Es2017Transpiler,
+      FuncEs2017Transpiler
     ];
     // Set transpiler
     $scope.transpiler = RubyTranspiler;
     if (titleAndCode.urlOptions.includes("es2017")) {
       $scope.transpiler = Es2017Transpiler;
+    } else if (titleAndCode.urlOptions.includes("func_es2017")) {
+      $scope.transpiler = FuncEs2017Transpiler;
     }
     // Initialize library
     $scope.transpiler.initLibrary();
@@ -170,6 +192,8 @@ angular.module("nipp", ['ace.angular'])
       // (NOTE: transpiler:ruby is default so it should be pushed)
       if ($scope.transpiler === Es2017Transpiler) {
         options.push("es2017");
+      } else  if ($scope.transpiler === FuncEs2017Transpiler) {
+        options.push("func_es2017");
       }
       // (NOTE: compression:deflate is default so it should be pushed)
       if ($scope.compressionAlg === LZMAAlg) {
