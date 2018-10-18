@@ -1,6 +1,6 @@
 // (from: https://murashun.jp/blog/20171210-01.html)
 
-const CACHE_NAME = '20181018-01';
+const CACHE_NAME = '20181015-01';
 // TODO: Hard code
 const CACHE_FILE = [
   '/',
