@@ -14,7 +14,7 @@ const CACHE_FILE = [
   "node_modules/lzma/src/lzma_worker-min.js",
   "node_modules/ace-builds/src-min-noconflict/ace.js",
   "node_modules/angular/angular.min.js",
-  "node_modules/ace-angular/ace-angular.js",
+  "js/ace-angular.js",
   "js/app.js",
   "node_modules/@babel/standalone/babel.min.js",
   "node_modules/purecss/build/pure-min.css",
