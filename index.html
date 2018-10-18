@@ -29,12 +29,14 @@
     <script defer src="node_modules/lzma/src/lzma_worker-min.js"></script>
 
     <!--  Ace editor -->
-    <script defer src="node_modules/ace-builds/src-min-noconflict/ace.js"></script>
+    <script src="node_modules/ace-builds/src-min-noconflict/ace.js"></script>
 
     <!-- AngularJS -->
-    <script defer src="node_modules/angular/angular.min.js"></script>
-    <!-- NOTE: Don't use "angular-ui/ui-ace" because 0.2.3 has bug in Android Chrome (after typing ng-model is empty) -->
-    <script defer src="node_modules/ace-angular/ace-angular.js"></script>
+    <!-- NOTE: Don't use `defer` or `sync` because they disable highlight of ace editor (why?) -->
+    <script src="node_modules/angular/angular.min.js"></script>
+    <!-- NOTE: Don't use "angular-ui/ui-ace" becausenpm  0.2.3 has bug in Android Chrome (after typing ng-model is empty) -->
+    <!-- NOTE: Don't use `defer` or `sync` because they disable highlight of ace editor (why?) -->
+    <script src="node_modules/ace-angular/ace-angular.js"></script>
     <script defer src="js/app.js"></script>
 
     <!-- Babel (standalone) -->

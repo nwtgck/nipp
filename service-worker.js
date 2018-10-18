@@ -19,7 +19,11 @@ const CACHE_FILE = [
   "node_modules/@babel/standalone/babel.min.js",
   "node_modules/purecss/build/pure-min.css",
   "node_modules/purecss/build/grids-responsive-min.css",
-  "images/twitter.png"
+  "images/twitter.png",
+
+  // Ace editor highlight
+  "node_modules/ace-builds/src-min-noconflict/mode-ruby.js",
+  "node_modules/ace-builds/src-min-noconflict/mode-javascript.js"
 ];
 
 self.addEventListener('install', function(e) {
