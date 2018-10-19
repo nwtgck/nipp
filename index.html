@@ -34,6 +34,10 @@
     <!-- AngularJS -->
     <!-- NOTE: Don't use `defer` or `sync` because they disable highlight of ace editor (why?) -->
     <script src="node_modules/angular/angular.min.js"></script>
+    <!-- Device detector -->
+    <script src="node_modules/ng-device-detector/ng-device-detector.min.js"></script>
+    <script src="node_modules/ua-device-detector/ua-device-detector.min.js"></script>
+    <script src="node_modules/re-tree/re-tree.min.js"></script>
     <!-- NOTE: Don't use "angular-ui/ui-ace" becausenpm  0.2.3 has bug in Android Chrome (after typing ng-model is empty) -->
     <!-- NOTE: Don't use `defer` or `sync` because they disable highlight of ace editor (why?) -->
     <script src="js/ace-angular.js"></script>
@@ -75,6 +79,10 @@
         <label for="compression_alg">Compression:</label>
         <select id="compression_alg" ng-options="a.name for a in compressionAlgs" ng-model="compressionAlg">
         </select>
+
+        <input type="checkbox" ng-change="setLocationHash()" ng-model="enableClickRun">: click_run
+
+        <button ng-if="enableClickRun" ng-bind="::clickRunButtonText" ng-click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)"></button>
       </form>
 
       <form class="pure-form pure-g">
