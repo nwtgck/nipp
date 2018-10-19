@@ -75,6 +75,10 @@
         <label for="compression_alg">Compression:</label>
         <select id="compression_alg" ng-options="a.name for a in compressionAlgs" ng-model="compressionAlg">
         </select>
+
+        <input type="checkbox" ng-change="setLocationHash()" ng-model="enableClickRun">: click_run
+
+        <button ng-if="enableClickRun" ng-click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)">Run</button>
       </form>
 
       <form class="pure-form pure-g">
