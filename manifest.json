@@ -1,7 +1,7 @@
 {
   "name": "Nipp",
   "short_name": "Nipp",
-  "background_color": "fff8ef",
+  "background_color": "#fff",
   "icons": [
     {
       "src": "images/icon-512.png",
