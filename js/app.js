@@ -134,9 +134,9 @@ function parseLocationHash() {
   }
 }
 
-angular.module("nipp", ['ace.angular'])
+angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
   // NOTE: Don't use $location.hash() because it escapes "/"
-  .controller('mainCtrl', ['$scope', function($scope){
+  .controller('mainCtrl', ['$scope', 'deviceDetector', function($scope, deviceDetector){
     // Get page title and code
     var titleAndCode = parseLocationHash();
     $scope.compressionAlgs = [
@@ -161,8 +161,9 @@ angular.module("nipp", ['ace.angular'])
     $scope.showTranspiledJsCode = false;
     // Executable function which return result
     var executableFunction = function(){return "";};
-    // Set default output
-    setOutputText();
+    // Enable click-run or not
+    // (click-run: Non-realtime/non-reactive evaluation)
+    $scope.enableClickRun = titleAndCode.urlOptions.includes("click_run");
     $scope.transpilers = [
       RubyTranspiler,
       Es2017Transpiler,
@@ -185,6 +186,13 @@ angular.module("nipp", ['ace.angular'])
     $scope.showError = true;
     // Whether has error or not
     $scope.hasError = false;
+    // Set click-run button text
+    $scope.clickRunButtonText = "Run" + (deviceDetector.isDesktop() ? (deviceDetector.os === "mac"? "(⌘+Enter)" : "(Ctrl+Enter)") : "");
+    // If enable click_run is disable
+    if (!$scope.enableClickRun) {
+      // Set default output
+      setOutputText();
+    }
 
     // Generate options part
     function getUrlOptionsPart() {
@@ -199,13 +207,17 @@ angular.module("nipp", ['ace.angular'])
       if ($scope.compressionAlg === LZMAAlg) {
         options.push("lzma");
       }
+      // If click_run is enable
+      if ($scope.enableClickRun) {
+        options.push("click_run");
+      }
       // Generate options part
       var options = options.join(",");
       return options;
     }
 
     // Set location.hash
-    function setLocationHash() {
+    $scope.setLocationHash = function() {
       // Create title part
       var titlePart = ($scope.pageTitle).replace(/ /g, "_");
       // Create options part
@@ -214,16 +226,25 @@ angular.module("nipp", ['ace.angular'])
       var encodedCode = encodeCode($scope.script, $scope.compressionAlg.compress);
       // Change location hash to the code
       location.hash = titlePart+"/"+urlOptionsPart+"/"+encodedCode;
-    }
+    };
 
     $scope.$watch("pageTitle", function(){
       // Set page title
       document.title = $scope.pageTitle;
       // Set location.hash
-      setLocationHash();
+      $scope.setLocationHash();
     });
 
     $scope.onChangeInputText = function(){
+      // If enable click_run is disable
+      if (!$scope.enableClickRun) {
+        // Set output text
+        setOutputText();
+      }
+    };
+
+    // (NOTE: this is not typo. onclick "click_run")
+    $scope.onClickClickRun = function(){
       // Set output text
       setOutputText();
     };
@@ -234,7 +255,7 @@ angular.module("nipp", ['ace.angular'])
       // Ensure to call once
       $scope.transpiler.initLibrary = function(){};
       // Update location.hash
-      setLocationHash();
+      $scope.setLocationHash();
       // Transpile
       $scope.transpile();
     };
@@ -247,8 +268,11 @@ angular.module("nipp", ['ace.angular'])
         $scope.transpiledJsCode = executableFunctionAndTraspiledJsCode.transpiledJsCode;
         $scope.errorStr = "";
         $scope.hasError = false;
-        // Set output text
-        setOutputText();
+        // If enable click_run is disable
+        if (!$scope.enableClickRun) {
+          // Set output text
+          setOutputText();
+        }
       } catch (err) {
         console.log("Transpile compile", err);
         $scope.errorStr = err.toString();
@@ -258,18 +282,19 @@ angular.module("nipp", ['ace.angular'])
 
     $scope.$watch('compressionAlg', function(){
       // Update location.hash
-      setLocationHash();
+      $scope.setLocationHash();
     });
 
     // Watch script changes
     // (from: https://stackoverflow.com/a/15424144/2885946)
     $scope.$watch('script', function(){
       // Set location.hash
-      setLocationHash();
+      $scope.setLocationHash();
       // Transpile
       $scope.transpile();
     }, true);
 
+    // Set output text
     function setOutputText(){
       // Set global INPUT string variable
       window.INPUT = $scope.inputText;
@@ -285,7 +310,7 @@ angular.module("nipp", ['ace.angular'])
         $scope.errorStr = err.toString();
         $scope.hasError = true;
       }
-    }
+    };
 
     $scope.shareOnTwitter = function(){
       // (from: http://d.hatena.ne.jp/osyo-manga/20140717/1405626111)
@@ -304,5 +329,14 @@ angular.module("nipp", ['ace.angular'])
 
     $scope.setShowError = function(b) {
       $scope.showError = b;
+    };
+
+    window.onkeydown = function(e){
+      if((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        $scope.$apply(function(){
+          // Run onclick click-run
+          $scope.onClickClickRun();
+        });
+      }
     };
   }]);
