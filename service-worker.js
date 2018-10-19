@@ -6,7 +6,7 @@ const CACHE_FILE = [
   '/',
   '/index.html',
   // Generate by Ruby:
-  // puts File.read('index.html').scan(%r{(link.+stylesheet.+href|src)="(.+?)"}).map{|e| "\"#{e[1]}\""}.join(",\n")
+  // ruby -e 'puts File.read("index.html").scan(%r{(link.+stylesheet.+href|src)="(.+?)"}).map{|e| "\"#{e[1]}\""}.join(",\n")'
   "bower_components/opal/opal/0.11.3/opal.min.js",
   "bower_components/opal/opal/0.11.3/opal-parser.min.js",
   "node_modules/url-parse/dist/url-parse.min.js",
@@ -14,6 +14,9 @@ const CACHE_FILE = [
   "node_modules/lzma/src/lzma_worker-min.js",
   "node_modules/ace-builds/src-min-noconflict/ace.js",
   "node_modules/angular/angular.min.js",
+  "node_modules/ng-device-detector/ng-device-detector.min.js",
+  "node_modules/ua-device-detector/ua-device-detector.min.js",
+  "node_modules/re-tree/re-tree.min.js",
   "js/ace-angular.js",
   "js/app.js",
   "node_modules/@babel/standalone/babel.min.js",

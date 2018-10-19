@@ -23,6 +23,7 @@
     "ace-builds": "^1.4.1",
     "angular": "^1.7.5",
     "lzma": "^2.3.2",
+    "ng-device-detector": "^5.1.2",
     "opal": "^0.6.4",
     "pako": "^1.0.6",
     "purecss": "^1.0.0",

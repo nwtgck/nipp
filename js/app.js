@@ -134,9 +134,9 @@ function parseLocationHash() {
   }
 }
 
-angular.module("nipp", ['ace.angular'])
+angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
   // NOTE: Don't use $location.hash() because it escapes "/"
-  .controller('mainCtrl', ['$scope', function($scope){
+  .controller('mainCtrl', ['$scope', 'deviceDetector', function($scope, deviceDetector){
     // Get page title and code
     var titleAndCode = parseLocationHash();
     $scope.compressionAlgs = [
@@ -186,6 +186,8 @@ angular.module("nipp", ['ace.angular'])
     $scope.showError = true;
     // Whether has error or not
     $scope.hasError = false;
+    // Set click-run button text
+    $scope.clickRunButtonText = "Run" + (deviceDetector.isDesktop() ? (deviceDetector.os === "mac"? "(⌘+Enter)" : "(Ctrl+Enter)") : "");
     // If enable click_run is disable
     if (!$scope.enableClickRun) {
       // Set default output
@@ -327,5 +329,14 @@ angular.module("nipp", ['ace.angular'])
 
     $scope.setShowError = function(b) {
       $scope.showError = b;
+    };
+
+    window.onkeydown = function(e){
+      if((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        $scope.$apply(function(){
+          // Run onclick click-run
+          $scope.onClickClickRun();
+        });
+      }
     };
   }]);
