@@ -61,6 +61,14 @@ nipp.cf/#`<Page Title>`/`<Options>`/`<Compressed Code>`
 Note that `<Page Title>`, `<Options>` and <`Compressed Code`> are under URL fragment `#`. This means your code is not send to Nipp web server!
 
 
+### Options
+
+- `es2017`: Use ES2017 (default: Ruby(Opal))
+- `func_es2017`: Use ES2017 but evaluated by `(new Function(...))()` not `eval()`, so output is always empty but faster
+- `lzma`: Compress code by using LZMA (default: deflate)
+- `click_run`: Click to run not real-time evaluation
+
+
 ## [PWA] - Progressive Web Apps
 
 Nipp runs even offline! Note that Nipp is available in flight mode ✈️.

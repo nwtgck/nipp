@@ -1,11 +1,12 @@
 {
   "name": "nipp",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Mini Application Hosted on URL",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "bower install",
-    "deploy": "npm run build && gh-pages -m '[AUTO] Upload pages' -d . -a"
+    "deploy": "npm run build && gh-pages -m '[AUTO] Upload pages' -d . -a",
+    "deploy:official": "echo 'nipp.cf' > CNAME && npm run build && gh-pages -m '[AUTO] Upload pages' -d . -a"
   },
   "repository": {
     "type": "git",
