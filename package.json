@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "bower install",
-    "deploy": "npm run build && gh-pages -m '[AUTO] Upload pages' -d . -a",
+    "deploy": "npm run build && gh-pages -m '[AUTO] Upload pages' -d .",
     "deploy:official": "echo 'nipp.cf' > CNAME && npm run build && gh-pages -m '[AUTO] Upload pages' -d . -a"
   },
   "repository": {
