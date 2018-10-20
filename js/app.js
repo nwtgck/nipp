@@ -309,6 +309,7 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
         $scope.hasError = false;
       } catch (err) {
         console.log("JS Runtime error", err);
+        $scope.outputText = "";
         $scope.errorStr = err.toString();
         $scope.hasError = true;
       }
