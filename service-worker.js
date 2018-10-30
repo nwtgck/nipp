@@ -9,6 +9,7 @@ const CACHE_FILE = [
   // ruby -e 'puts File.read("index.html").scan(%r{(link.+stylesheet.+href|src)="(.+?)"}).map{|e| "\"#{e[1]}\""}.join(",\n")'
   "bower_components/opal/opal/0.11.3/opal.min.js",
   "bower_components/opal/opal/0.11.3/opal-parser.min.js",
+  "bower_components/opal/opal/0.11.3/native.min.js",
   "node_modules/url-parse/dist/url-parse.min.js",
   "node_modules/pako/dist/pako.min.js",
   "node_modules/lzma/src/lzma_worker-min.js",
