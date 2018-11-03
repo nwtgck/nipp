@@ -15,9 +15,14 @@
     <title>nipp</title>
     <meta name="description" content="URL Hosted Mini Application">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Babel polyfill for Array.prototype.include, Object.prototype.assign or etc. -->
+    <script defer src="node_modules/@babel/polyfill/dist/polyfill.min.js"></script>
+
     <!-- Opal -->
     <script defer src="bower_components/opal/opal/0.11.3/opal.min.js"></script>
     <script defer src="bower_components/opal/opal/0.11.3/opal-parser.min.js"></script>
+    <script defer src="bower_components/opal/opal/0.11.3/native.min.js"></script>
 
     <!-- URL parse -->
     <script defer src="node_modules/url-parse/dist/url-parse.min.js"></script>
@@ -68,7 +73,8 @@
 
       <div class="pure-g">
         <div class="pure-u-1">
-          <div ace-editor="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode}" style="height:10em" ng-model="script"></div>
+          <div ace-editor="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode}" ng-hide="useTextarea" style="height:10em" ng-model="script"></div>
+          <textarea ng-show="useTextarea" style="height:10em; width: 100%" ng-model="script" placeholder="Code"></textarea>
         </div>
       </div>
       <form class="pure-form pure-form-aligned">
@@ -81,6 +87,8 @@
         </select>
 
         <input type="checkbox" ng-change="setLocationHash()" ng-model="enableClickRun">: click_run
+
+        <input type="checkbox" ng-model="useTextarea">: Use &lt;textarea&gt;
 
         <button ng-if="enableClickRun" ng-bind="::clickRunButtonText" ng-click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)"></button>
       </form>
@@ -101,9 +109,11 @@
       <span ng-if="showTranspiledJsCode">
         <div class="pure-g">
           <div class="pure-u-1">
-            <div ace-editor="{mode: 'javascript'}" style="height:10em" ng-model="transpiledJsCode"></div>
+            <div ace-editor="{mode: 'javascript'}" ng-if="!useTextarea" style="height:10em" ng-model="transpiledJsCode"></div>
+            <textarea ng-if="useTextarea" style="height:10em; width: 100%" ng-model="transpiledJsCode"></textarea>
           </div>
         </div>
       </span>
+    </div>
   </body>
 </html>

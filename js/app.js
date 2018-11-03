@@ -188,6 +188,8 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
     $scope.hasError = false;
     // Set click-run button text
     $scope.clickRunButtonText = "Run" + (deviceDetector.isDesktop() ? (deviceDetector.os === "mac"? "(⌘+Enter)" : "(Ctrl+Enter)") : "");
+    // Use textarea instead of ace
+    $scope.useTextarea = false;
     // If enable click_run is disable
     if (!$scope.enableClickRun) {
       // Set default output
@@ -307,6 +309,7 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
         $scope.hasError = false;
       } catch (err) {
         console.log("JS Runtime error", err);
+        $scope.outputText = "";
         $scope.errorStr = err.toString();
         $scope.hasError = true;
       }

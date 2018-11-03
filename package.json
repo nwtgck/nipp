@@ -1,6 +1,6 @@
 {
   "name": "nipp",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Mini Application Hosted on URL",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/nwtgck/nipp#readme",
   "dependencies": {
+    "@babel/polyfill": "^7.0.0",
     "@babel/standalone": "^7.1.0",
     "ace-angular": "^0.1.1",
     "ace-builds": "^1.4.1",
