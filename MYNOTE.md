@@ -1,4 +1,4 @@
-# My Node
+# My Note
 
 ## How to deploy to GitHub pages
 
