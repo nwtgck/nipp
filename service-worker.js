@@ -1,12 +1,13 @@
 // (from: https://murashun.jp/blog/20171210-01.html)
 
-const CACHE_NAME = '20181015-01';
+const CACHE_NAME = '20181103-01';
 // TODO: Hard code
 const CACHE_FILE = [
   '/',
   '/index.html',
   // Generate by Ruby:
   // ruby -e 'puts File.read("index.html").scan(%r{(link.+stylesheet.+href|src)="(.+?)"}).map{|e| "\"#{e[1]}\""}.join(",\n")'
+  "node_modules/@babel/polyfill/dist/polyfill.min.js",
   "bower_components/opal/opal/0.11.3/opal.min.js",
   "bower_components/opal/opal/0.11.3/opal-parser.min.js",
   "bower_components/opal/opal/0.11.3/native.min.js",
