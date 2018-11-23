@@ -1,2 +1,5 @@
 /node_modules
 /bower_components
+/.firebaserc
+/.firebase/hosting..cache
+/firebase-debug.log
