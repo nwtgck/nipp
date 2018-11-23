@@ -21,7 +21,7 @@
     "@babel/polyfill": "^7.0.0",
     "@babel/standalone": "^7.1.0",
     "ace-angular": "^0.1.1",
-    "ace-builds": "^1.4.1",
+    "ace-builds": "^1.4.2",
     "angular": "^1.7.5",
     "lzma": "^2.3.2",
     "ng-device-detector": "^5.1.2",
