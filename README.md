@@ -1,5 +1,7 @@
 # Nipp
-<img src="images/nipp-logo.svg" width="100">
+<img src="images/nipp-logo.svg" width="100"> 
+
+[![Build Status](https://travis-ci.com/nwtgck/nipp.svg?branch=develop)](https://travis-ci.com/nwtgck/nipp)
 
 Mini Application Hosted on URL <https://nipp.cf/>  
 Nipp is inspired by [itty.bitty](https://github.com/alcor/itty-bitty).
