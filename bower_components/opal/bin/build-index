@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'json'
 require 'erb'
 require 'fileutils'
 
@@ -7,13 +8,15 @@ extend FileUtils
 
 erb = ERB.new(File.read("#{__dir__}/index.erb"))
 version_erb = ERB.new(DATA.read)
+current_version = JSON.parse(File.read "#{__dir__}/../bower.json")["version"]
 
 versions = Dir["#{__dir__}/../opal/*"].map do |dir|
   version = File.basename(dir)
   cd dir do
     paths = Dir['*.js'].sort
+    index_version = version == 'current' ? current_version : version
     p version: version, paths: paths.size
-    index_html = version_erb.result_with_hash(version: version, paths: paths)
+    index_html = version_erb.result_with_hash(version: index_version, paths: paths)
 
     File.write 'index.html', index_html
   end
@@ -47,8 +50,14 @@ __END__
   <ul><% paths.each do |path| %>
     <li>
       <a href="//cdn.opalrb.com/opal/<%= version %>/<%= path %>">
-        //cdn.opalrb.com/opal/<%= version %>/<%= path %>
+        <%= path %>
       </a>
+      <br>
+      //cdn.opalrb.com/opal/<%= version %>/<%= path %>
+      <br>
+      <code>
+      &lt;script src="//cdn.opalrb.com/opal/<%= version %>/<%= path %>" onload="Opal.require(<%= path.inspect %>)"&gt;&lt;/script&gt;
+      </code><br><br>
     </li>
   <% end %></ul>
 </body>
