@@ -28,7 +28,7 @@
     "opal": "^0.6.4",
     "pako": "^1.0.6",
     "purecss": "^1.0.0",
-    "url-parse": "^1.4.3"
+    "url-parse": "^1.4.4"
   },
   "devDependencies": {
     "bower": "^1.8.4",
