@@ -1,6 +1,6 @@
 {
   "name": "nipp",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Mini Application Hosted on URL",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -19,12 +19,12 @@
   "homepage": "https://github.com/nwtgck/nipp#readme",
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
-    "@babel/standalone": "^7.1.0",
+    "@babel/standalone": "^7.2.0",
     "ace-angular": "^0.1.1",
     "ace-builds": "^1.4.2",
     "angular": "^1.7.5",
     "lzma": "^2.3.2",
-    "ng-device-detector": "^5.1.2",
+    "ng-device-detector": "^5.1.3",
     "opal": "^0.6.4",
     "pako": "^1.0.7",
     "purecss": "^1.0.0",
