@@ -1,0 +1,34 @@
+version: 2
+
+ANCHORS:
+ node_steps: &node_steps
+   steps:
+     - checkout
+     - run: npm install
+     # Check whether "run build" is successful
+     - run: npm run build
+
+jobs:
+  node_10:
+    docker:
+      - image: node:10-alpine 
+    <<: *node_steps
+  
+  node_8:
+    docker:
+      - image: node:8-alpine 
+    <<: *node_steps
+  
+  node_6:
+    docker:
+      - image: node:6-alpine 
+    <<: *node_steps
+  
+workflows:
+  version: 2
+  node_tests:
+    jobs:
+      - node_10
+      - node_8
+      - node_6
+ 
