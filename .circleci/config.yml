@@ -3,6 +3,7 @@ version: 2
 ANCHORS:
  node_steps: &node_steps
    steps:
+     - run: apk --no-cache add git
      - checkout
      - run: npm install
      # Check whether "run build" is successful
