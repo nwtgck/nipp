@@ -164,6 +164,8 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
     // Enable click-run or not
     // (click-run: Non-realtime/non-reactive evaluation)
     $scope.enableClickRun = titleAndCode.urlOptions.includes("click_run");
+    // Use promise-wait or not
+    $scope.enablePromiseWait = titleAndCode.urlOptions.includes("promise_wait");
     $scope.transpilers = [
       RubyTranspiler,
       Es2017Transpiler,
@@ -212,6 +214,10 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
       // If click_run is enable
       if ($scope.enableClickRun) {
         options.push("click_run");
+      }
+      // If promise_wait is enable
+      if ($scope.enablePromiseWait) {
+        options.push("promise_wait");
       }
       // Generate options part
       var options = options.join(",");
@@ -301,12 +307,36 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
       // Set global INPUT string variable
       window.INPUT = $scope.inputText;
       try {
+        // Get output
         var output = executableFunction();
-        // Set output text
-        $scope.outputText = output;
-        // Set no error
-        $scope.errorStr = "";
-        $scope.hasError = false;
+        // If promise-wait is enable
+        if($scope.enablePromiseWait && output !== undefined) {
+          // Get prototype of the object
+          var proto = Object.getPrototypeOf(output);
+          // If the output object is a Promise
+          if(proto === Promise.prototype) {
+            $scope.outputText = "<The promise is not complete yet>";
+            output
+              .then(function(res){
+                $scope.$apply(function(){
+                  $scope.outputText = res;
+                });
+              })
+              .catch(function(err){
+                $scope.$apply(function(){
+                  $scope.outputText = "<Promise error: " + err.toString() + ">";
+                  $scope.errorStr = err.toString();
+                  $scope.hasError = true;
+                });
+              });
+          }
+        } else {
+          // Set output text
+          $scope.outputText = output;
+          // Set no error
+          $scope.errorStr = "";
+          $scope.hasError = false;
+        }
       } catch (err) {
         console.log("JS Runtime error", err);
         $scope.outputText = "";
