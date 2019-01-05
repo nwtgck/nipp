@@ -188,6 +188,9 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
     $scope.hasError = false;
     // Set click-run button text
     $scope.clickRunButtonText = "Run" + (deviceDetector.isDesktop() ? (deviceDetector.os === "mac"? "(⌘+Enter)" : "(Ctrl+Enter)") : "");
+    // Use promise-wait or not
+    // TODO: Hard code
+    $scope.enablePromiseWait = true;
     // Use textarea instead of ace
     $scope.useTextarea = false;
     // If enable click_run is disable
@@ -301,12 +304,36 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
       // Set global INPUT string variable
       window.INPUT = $scope.inputText;
       try {
+        // Get output
         var output = executableFunction();
-        // Set output text
-        $scope.outputText = output;
-        // Set no error
-        $scope.errorStr = "";
-        $scope.hasError = false;
+        // If promise-wait is enable
+        if($scope.enablePromiseWait && output !== undefined) {
+          // Get prototype of the object
+          var proto = Object.getPrototypeOf(output);
+          // If the output object is a Promise
+          if(proto === Promise.prototype) {
+            $scope.outputText = "<The promise is not complete yet>";
+            output
+              .then(function(res){
+                $scope.$apply(function(){
+                  $scope.outputText = res;
+                });
+              })
+              .catch(function(err){
+                $scope.$apply(function(){
+                  $scope.outputText = "<Promise error: " + err.toString() + ">";
+                  $scope.errorStr = err.toString();
+                  $scope.hasError = true;
+                });
+              });
+          }
+        } else {
+          // Set output text
+          $scope.outputText = output;
+          // Set no error
+          $scope.errorStr = "";
+          $scope.hasError = false;
+        }
       } catch (err) {
         console.log("JS Runtime error", err);
         $scope.outputText = "";
