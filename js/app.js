@@ -164,6 +164,8 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
     // Enable click-run or not
     // (click-run: Non-realtime/non-reactive evaluation)
     $scope.enableClickRun = titleAndCode.urlOptions.includes("click_run");
+    // Use promise-wait or not
+    $scope.enablePromiseWait = titleAndCode.urlOptions.includes("promise_wait");
     $scope.transpilers = [
       RubyTranspiler,
       Es2017Transpiler,
@@ -188,9 +190,6 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
     $scope.hasError = false;
     // Set click-run button text
     $scope.clickRunButtonText = "Run" + (deviceDetector.isDesktop() ? (deviceDetector.os === "mac"? "(⌘+Enter)" : "(Ctrl+Enter)") : "");
-    // Use promise-wait or not
-    // TODO: Hard code
-    $scope.enablePromiseWait = true;
     // Use textarea instead of ace
     $scope.useTextarea = false;
     // If enable click_run is disable
@@ -215,6 +214,10 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
       // If click_run is enable
       if ($scope.enableClickRun) {
         options.push("click_run");
+      }
+      // If promise_wait is enable
+      if ($scope.enablePromiseWait) {
+        options.push("promise_wait");
       }
       // Generate options part
       var options = options.join(",");
