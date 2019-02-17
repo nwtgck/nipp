@@ -49,7 +49,6 @@ function decodeCode(encodedCode, decompressor) {
 var RubyTranspiler = {
   name: "Ruby",
   aceEditorMode: "ruby",
-  aceAdvanced: {tabSize: 2},
   initLibrary: function(){
     Opal.load('opal');
     Opal.load('opal-parser');
@@ -74,7 +73,6 @@ var RubyTranspiler = {
 var Es2017Transpiler = {
   name: "ES2017",
   aceEditorMode: "javascript",
-  aceAdvanced: {tabSize: 4},
   initLibrary: function(){},
   getExecutableFunctionAndTranspiledJsCode: function(script){
     // Use javascript global variable "INPUT" 
@@ -94,7 +92,6 @@ var Es2017Transpiler = {
 var FuncEs2017Transpiler = {
   name: "ES2017 with Function",
   aceEditorMode: "javascript",
-  aceAdvanced: {tabSize: 4},
   initLibrary: function(){},
   getExecutableFunctionAndTranspiledJsCode: function(script){
     // Use javascript global variable "INPUT"

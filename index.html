@@ -112,7 +112,7 @@
 
       <div class="pure-g">
         <div class="pure-u-1">
-          <div ace-editor="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode, advanced: transpiler.aceAdvanced}" ng-hide="useTextarea" style="height:10em" ng-model="script"></div>
+          <div ace-editor="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode, advanced: {tabSize: 2}}" ng-hide="useTextarea" style="height:10em" ng-model="script"></div>
           <textarea ng-show="useTextarea" style="height:10em; width: 100%" ng-model="script" placeholder="Code"></textarea>
         </div>
       </div>
