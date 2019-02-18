@@ -49,7 +49,7 @@ const CACHE_FILE = [
   "bower_components/opal/opal/0.11.3/time.min.js",
   "bower_components/opal/opal/0.11.3/yaml.min.js",
   "node_modules/url-parse/dist/url-parse.min.js",
-  "node_modules/pako/dist/pako.min.js",
+  "node_modules/pako/dist/pako.js",
   "node_modules/lzma/src/lzma_worker-min.js",
   "node_modules/ace-builds/src-min-noconflict/ace.js",
   "node_modules/angular/angular.min.js",
