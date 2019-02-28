@@ -3,26 +3,25 @@ version: 2
 ANCHORS:
  node_steps: &node_steps
    steps:
-     - run: apk --no-cache add git
      - checkout
      - run: npm install
      # Check whether "run build" is successful
-     - run: npm run build -- --allow-root
+     - run: npm run build
 
 jobs:
   node_10:
     docker:
-      - image: node:10-alpine 
+      - image: circleci/node:10
     <<: *node_steps
   
   node_8:
     docker:
-      - image: node:8-alpine 
+      - image: circleci/node:8
     <<: *node_steps
   
   node_6:
     docker:
-      - image: node:6-alpine 
+      - image: circleci/node:6
     <<: *node_steps
   
 workflows:
