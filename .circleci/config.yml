@@ -34,7 +34,7 @@ jobs:
     steps:
       - checkout
       # Setting to push as @bee-bot
-      - git remote set-url origin ${GIT_URL}
+      - run: git remote set-url origin ${GIT_URL}
       - run: npm install
       - run: npm run deploy
   
