@@ -1,6 +1,6 @@
 {
   "name": "nipp",
-  "version": "0.11.2-SNAPSHOT",
+  "version": "0.11.2",
   "description": "Mini Application Hosted on URL",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
