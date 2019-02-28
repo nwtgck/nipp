@@ -31,7 +31,7 @@
     "url-parse": "^1.4.4"
   },
   "devDependencies": {
-    "bower": "^1.8.4",
+    "bower": "^1.8.8",
     "gh-pages": "^2.0.1"
   }
 }
