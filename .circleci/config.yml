@@ -6,7 +6,7 @@ ANCHORS:
      - checkout
      - run: npm install
      # Check whether "run build" is successful
-     - run: npm run build -- --allow-root
+     - run: npm run build
 
 jobs:
   node_10:
