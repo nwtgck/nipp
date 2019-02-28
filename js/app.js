@@ -320,6 +320,9 @@ angular.module("nipp", ['ace.angular', 'ng.deviceDetector'])
               .then(function(res){
                 $scope.$apply(function(){
                   $scope.outputText = res;
+                  // Set no error
+                  $scope.errorStr = "";
+                  $scope.hasError = false;
                 });
               })
               .catch(function(err){
