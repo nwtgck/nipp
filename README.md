@@ -1,7 +1,7 @@
 # Nipp
 <img src="images/nipp-logo.svg" width="100"> 
 
-[![Build Status](https://travis-ci.com/nwtgck/nipp.svg?branch=develop)](https://travis-ci.com/nwtgck/nipp) [![CircleCI](https://circleci.com/gh/nwtgck/nipp.svg?style=shield)](https://circleci.com/gh/nwtgck/nipp)
+[![CircleCI](https://circleci.com/gh/nwtgck/nipp.svg?style=shield)](https://circleci.com/gh/nwtgck/nipp)
 
 Mini Application Hosted on URL <https://nwtgck.github.io/nipp/>  
 Nipp is inspired by [itty.bitty](https://github.com/alcor/itty-bitty).
