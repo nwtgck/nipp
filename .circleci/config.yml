@@ -64,4 +64,4 @@ workflows:
           filters:
             branches:
               only:
-                - gh-pages-deploy-test-branch
+                - master
