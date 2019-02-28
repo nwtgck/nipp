@@ -55,6 +55,10 @@ workflows:
             branches:
               only: /.*/
       - gh_page_deploy:
+          requires:
+            - node_10
+            - node_8
+            - node_6
           filters:
             branches:
               only:
