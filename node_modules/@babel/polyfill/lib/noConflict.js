@@ -4,9 +4,15 @@ require("core-js/es6");
 
 require("core-js/fn/array/includes");
 
+require("core-js/fn/array/flat-map");
+
 require("core-js/fn/string/pad-start");
 
 require("core-js/fn/string/pad-end");
+
+require("core-js/fn/string/trim-start");
+
+require("core-js/fn/string/trim-end");
 
 require("core-js/fn/symbol/async-iterator");
 
