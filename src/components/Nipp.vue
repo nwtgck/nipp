@@ -29,7 +29,9 @@
         <input type="checkbox" v-model="enableClickRun" v-on:change="setLocationHash()">: click_run
         <input type="checkbox" v-model="enablePromiseWait" v-on:change="setLocationHash()">: promise_wait
 
-        <button ng-if="enableClickRun" ng-bind="::clickRunButtonText" ng-click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)"></button>
+        <button v-if="enableClickRun" v-on:click="setOutputText()" class="pure-button" style="color: white; background: rgb(28, 184, 65)">
+          {{ clickRunButtonText }}
+        </button>
       </form>
 
       <form class="pure-form pure-g">
@@ -60,6 +62,7 @@
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import * as pako from 'pako';
+import * as uaDeviceDetector from 'ua-device-detector';
 
 // Get Opal object
 const Opal = (window as any).Opal;
@@ -291,9 +294,10 @@ export default class Nipp extends Vue {
     // Set default value to global variable "INPUT"
     // TODO: duplicate code
     (window as any).INPUT = this.inputText;
+    // Get device info
+    const deviceInfo = uaDeviceDetector.parseUserAgent(window.navigator.userAgent);
     // Set click-run button text
-    // TODO: impl
-    // this.clickRunButtonText = "Run" + (deviceDetector.isDesktop() ? (deviceDetector.os === "mac"? "(⌘+Enter)" : "(Ctrl+Enter)") : "");
+    this.clickRunButtonText = "Run" + (deviceInfo.isDesktop() ? (deviceInfo.os === "mac"? "(⌘+Enter)" : "(Ctrl+Enter)") : "");
     // If enable click_run is disable
     if (!this.enableClickRun) {
       // Set default output
