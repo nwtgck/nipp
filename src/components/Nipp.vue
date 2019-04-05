@@ -59,6 +59,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
+import * as pako from 'pako';
 
 // Get Opal object
 const Opal = (window as any).Opal;
@@ -71,6 +72,21 @@ type CompressionAlg = {
   compress: (raw: string) => string,
   decompress: (compressed: string) => string
 }
+
+const DeflateAlg: CompressionAlg = {
+  name: "Deflate",
+  compress: (str: string) => {
+    // NOTE: Negative windowBits means no header and no checksum
+    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
+    var binStr = pako.deflate(str, {to: 'string', level: 9, windowBits: -8});
+    return binStr;
+  },
+  decompress: (binStr: string) => {
+    // NOTE: Negative windowBits means no header and no checksum
+    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
+    return pako.inflate(binStr, {to: 'string', windowBits: -8});
+  }
+};
 
 const LZMAAlg: CompressionAlg = {
   name: "LZMA",
@@ -120,12 +136,48 @@ const RubyTranspiler: Transpiler = {
 
 
 // Encode code
-function encodeCode(code: string, compressor: (raw: string)=>string) {
+function encodeCode(code: string, compressor: (raw: string) => string) {
   try {
     const binStr = compressor(code);
     return btoa(binStr);
   } catch (err) {
     return "";
+  }
+}
+
+// Decode code
+function decodeCode(encodedCode: string, decompressor: (compressed: string) => string) {
+  try {
+    // Base64 => binary String
+    var binStr = atob(encodedCode);
+    return decompressor(binStr);
+  } catch (err) {
+    return "";
+  }
+}
+
+// Parse location.hash and return page title and code
+function parseLocationHash(): { pageTitle: string, urlOptions: string[], encodedCode: string } {
+  // Split by "/"
+  const splited = location.hash.split("/");
+  if(splited.length >= 3) {
+    // Get title
+    const title = decodeURI(splited[0].substring(1).replace(/_/g, " "));
+    // Get URL options
+    const urlOptions = splited[1].split(",");
+    // Get encoded code
+    const encodedCode = splited.slice(2, splited.length).join("/");
+    return {
+      pageTitle: title,
+      urlOptions: urlOptions,
+      encodedCode: encodedCode
+    };
+  } else {
+    return {
+      pageTitle: "",
+      urlOptions: [],
+      encodedCode: ""
+    }
   }
 }
 
@@ -135,9 +187,12 @@ RubyTranspiler.initLibrary();
 
 @Component
 export default class Nipp extends Vue {
-  pageTitle =  ""; //titleAndCode.pageTitle; TODO: impl
+  // TODO: Use { pageTitle,  }
+  titleAndCode = parseLocationHash();
+  pageTitle =  this.titleAndCode.pageTitle;
   compressionAlg = LZMAAlg; // TODO: impl
-  script: string = "";
+  // Set decoded location.hash as default script
+  script = decodeCode(this.titleAndCode.encodedCode, this.compressionAlg.decompress);
   transpiler: Transpiler = RubyTranspiler; // TODO: impl
   inputText: string = "";
   outputText: string = "";
@@ -150,6 +205,19 @@ export default class Nipp extends Vue {
   private executableFunction: Function = function(){return "";};
   enablePromiseWait: boolean = false; // TODO: impl
 
+  mounted () {
+    console.log(this.script);
+    console.log(this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script));
+    // Set default value to global variable "INPUT"
+    // TODO: duplicate code
+    (window as any).INPUT = this.inputText;
+    // If enable click_run is disable
+    if (!this.enableClickRun) {
+      // Set transpile and initial output
+      this.transpile();
+    }
+  }
+
   @Watch("script")
   onChangeScript(): void {
     // Set location.hash
@@ -159,7 +227,6 @@ export default class Nipp extends Vue {
   }
 
   setLocationHash() {
-    // TODO: impl
     // Create title part
     const titlePart = (this.pageTitle).replace(/ /g, "_");
     // Create options part
@@ -171,8 +238,8 @@ export default class Nipp extends Vue {
   };
 
   // Generate options part
-  getUrlOptionsPart(): string[] {
-    var options: string[] = [];
+  getUrlOptionsPart(): string {
+    const options: string[] = [];
     // TODO: impl
     // // (NOTE: transpiler:ruby is default so it should be pushed)
     // if ($scope.transpiler === Es2017Transpiler) {
@@ -180,21 +247,20 @@ export default class Nipp extends Vue {
     // } else  if ($scope.transpiler === FuncEs2017Transpiler) {
     //   options.push("func_es2017");
     // }
-    // // (NOTE: compression:deflate is default so it should be pushed)
-    // if ($scope.compressionAlg === LZMAAlg) {
-    //   options.push("lzma");
-    // }
-    // // If click_run is enable
-    // if ($scope.enableClickRun) {
-    //   options.push("click_run");
-    // }
-    // // If promise_wait is enable
-    // if ($scope.enablePromiseWait) {
-    //   options.push("promise_wait");
-    // }
-    // // Generate options part
-    // var options = options.join(",");
-    return options;
+    // (NOTE: compression:deflate is default so it should be pushed)
+    if (this.compressionAlg === LZMAAlg) {
+      options.push("lzma");
+    }
+    // If click_run is enable
+    if (this.enableClickRun) {
+      options.push("click_run");
+    }
+    // If promise_wait is enable
+    if (this.enablePromiseWait) {
+      options.push("promise_wait");
+    }
+    // Generate options part
+    return options.join(",");
   }
 
   transpile() {
