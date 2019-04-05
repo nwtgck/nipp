@@ -58,10 +58,33 @@
 </template>
 
 <script lang="ts">
-  import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
+import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 
 // Get Opal object
-const Opal = (window as any).Opal
+const Opal = (window as any).Opal;
+// Get LZMA object
+const LZMA = (window as any).LZMA;
+
+
+type CompressionAlg = {
+  name: string,
+  compress: (raw: string) => string,
+  decompress: (compressed: string) => string
+}
+
+const LZMAAlg: CompressionAlg = {
+  name: "LZMA",
+  compress: (str: string) => {
+    const compressed: string = LZMA.compress(str, 9);
+    // (from: https://github.com/alcor/itty-bitty/blob/5292c4b7891939dab89412f9e474bca707c9bec5/data.js#L25)
+    // TODO: Not use any in Uint8Array
+    // TODO: Not use any in apply
+    return String.fromCharCode.apply(null, new Uint8Array(compressed as any) as any);
+  },
+  decompress: function(binStr) {
+    return LZMA.decompress(binStr.split('').map(function(c){return c.charCodeAt(0)}));
+  }
+};
 
 type Transpiler = {
   name: string,
@@ -95,12 +118,25 @@ const RubyTranspiler: Transpiler = {
   }
 };
 
+
+// Encode code
+function encodeCode(code: string, compressor: (raw: string)=>string) {
+  try {
+    const binStr = compressor(code);
+    return btoa(binStr);
+  } catch (err) {
+    return "";
+  }
+}
+
 // Initialize Opal
 // TODO: Move proper place
 RubyTranspiler.initLibrary();
 
 @Component
 export default class Nipp extends Vue {
+  pageTitle =  ""; //titleAndCode.pageTitle; TODO: impl
+  compressionAlg = LZMAAlg; // TODO: impl
   script: string = "";
   transpiler: Transpiler = RubyTranspiler; // TODO: impl
   inputText: string = "";
@@ -122,17 +158,44 @@ export default class Nipp extends Vue {
     this.transpile();
   }
 
-  setLocationHash = function() {
+  setLocationHash() {
     // TODO: impl
-    // // Create title part
-    // var titlePart = ($scope.pageTitle).replace(/ /g, "_");
-    // // Create options part
-    // var urlOptionsPart = getUrlOptionsPart();
-    // // Encode code
-    // var encodedCode = encodeCode($scope.script, $scope.compressionAlg.compress);
-    // // Change location hash to the code
-    // location.hash = titlePart+"/"+urlOptionsPart+"/"+encodedCode;
+    // Create title part
+    const titlePart = (this.pageTitle).replace(/ /g, "_");
+    // Create options part
+    const urlOptionsPart = this.getUrlOptionsPart();
+    // Encode code
+    const encodedCode = encodeCode(this.script, this.compressionAlg.compress);
+    // Change location hash to the code
+    location.hash = titlePart+"/"+urlOptionsPart+"/"+encodedCode;
   };
+
+  // Generate options part
+  getUrlOptionsPart(): string[] {
+    var options: string[] = [];
+    // TODO: impl
+    // // (NOTE: transpiler:ruby is default so it should be pushed)
+    // if ($scope.transpiler === Es2017Transpiler) {
+    //   options.push("es2017");
+    // } else  if ($scope.transpiler === FuncEs2017Transpiler) {
+    //   options.push("func_es2017");
+    // }
+    // // (NOTE: compression:deflate is default so it should be pushed)
+    // if ($scope.compressionAlg === LZMAAlg) {
+    //   options.push("lzma");
+    // }
+    // // If click_run is enable
+    // if ($scope.enableClickRun) {
+    //   options.push("click_run");
+    // }
+    // // If promise_wait is enable
+    // if ($scope.enablePromiseWait) {
+    //   options.push("promise_wait");
+    // }
+    // // Generate options part
+    // var options = options.join(",");
+    return options;
+  }
 
   transpile() {
     try {
