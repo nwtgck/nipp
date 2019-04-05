@@ -4,7 +4,7 @@
       <form class="pure-form pure-g">
         <input type="text" v-model="pageTitle" placeholder="App name" class="pure-u-11-12">
         <div class="pure-u-1-12" style="text-align: center">
-          <img src="../assets/twitter.png" alt="Share on Twitter" ng-click="shareOnTwitter()" style="width: 2em; height: 2em;">
+          <img src="../assets/twitter.png" alt="Share on Twitter" v-on:click="shareOnTwitter()" style="width: 2em; height: 2em;">
         </div>
       </form>
 
@@ -426,6 +426,12 @@ export default class Nipp extends Vue {
       this.errorStr = err.toString();
       this.hasError = true;
     }
+  }
+
+  shareOnTwitter() {
+    // (from: http://d.hatena.ne.jp/osyo-manga/20140717/1405626111)
+    const url = 'https://twitter.com/share?text='+encodeURIComponent(this.pageTitle)+"&url=" + encodeURIComponent(location.href)+"&hashtags=nipp";
+    window.open(url,'','scrollbars=yes,width=500,height=300,');
   };
 
 }
