@@ -1,6 +1,6 @@
 <template>
   <!-- TODO: Remove angular attributes start with "ng-" -->
-  <div ng-controller="mainCtrl">
+  <div>
       <form class="pure-form pure-g">
         <input type="text" v-model="pageTitle" placeholder="App name" class="pure-u-11-12">
         <div class="pure-u-1-12" style="text-align: center">
@@ -17,17 +17,19 @@
       </div>
       <form class="pure-form pure-form-aligned">
         <label for="transpiler">Transpiler:</label>
-        <select id="transpiler" ng-options="t.name for t in transpilers" ng-change="onChangeTranspiler()" ng-model="transpiler">
+        <select id="transpiler" v-model="transpiler" v-on:change="onChangeTranspiler()" ng-model="transpiler">
+          <option v-for="t in transpilers" v-bind:value="t" >{{ t.name }}</option>
         </select>
 
         <label for="compression_alg">Compression:</label>
-        <select id="compression_alg" ng-options="a.name for a in compressionAlgs" ng-model="compressionAlg">
-        </select>
+          <select id="compression_alg" v-model="compressionAlg" >
+            <option v-for="a in compressionAlgs" v-bind:value="a" >{{ a.name }}</option>
+          </select>
 
-        <input type="checkbox" ng-change="setLocationHash()" ng-model="enableClickRun">: click_run
-        <input type="checkbox" ng-change="setLocationHash()" ng-model="enablePromiseWait">: promise_wait
+        <input type="checkbox" v-model="enableClickRun" v-on:change="setLocationHash()">: click_run
+        <input type="checkbox" v-model="enablePromiseWait" v-on:change="setLocationHash()">: promise_wait
 
-        <input type="checkbox" ng-model="useTextarea">: Use &lt;textarea&gt;
+<!--        <input type="checkbox" ng-model="useTextarea">: Use &lt;textarea&gt;-->
 
         <button ng-if="enableClickRun" ng-bind="::clickRunButtonText" ng-click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)"></button>
       </form>
@@ -309,6 +311,12 @@ export default class Nipp extends Vue {
     this.setLocationHash();
   }
 
+  @Watch('compressionAlg')
+  onChangeCompressionAlg() {
+    // Update location.hash
+    this.setLocationHash();
+  }
+
   @Watch("script")
   onChangeScript(): void {
     // Set location.hash
@@ -352,6 +360,17 @@ export default class Nipp extends Vue {
     // Generate options part
     return options.join(",");
   }
+
+  onChangeTranspiler() {
+    // Initialize library
+    this.transpiler.initLibrary();
+    // Ensure to call once
+    this.transpiler.initLibrary = () => {};
+    // Update location.hash
+    this.setLocationHash();
+    // Transpile
+    this.transpile();
+  };
 
   transpile() {
     try {
