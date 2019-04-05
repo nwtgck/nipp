@@ -187,34 +187,85 @@ RubyTranspiler.initLibrary();
 
 @Component
 export default class Nipp extends Vue {
-  // TODO: Use { pageTitle,  }
-  titleAndCode = parseLocationHash();
-  pageTitle =  this.titleAndCode.pageTitle;
-  compressionAlg = LZMAAlg; // TODO: impl
-  // Set decoded location.hash as default script
-  script = decodeCode(this.titleAndCode.encodedCode, this.compressionAlg.decompress);
-  transpiler: Transpiler = RubyTranspiler; // TODO: impl
-  inputText: string = "";
-  outputText: string = "";
-  errorStr: string = "";
-  hasError: boolean = false;
-  enableClickRun: boolean = false; // TODO: impl
+  compressionAlgs: ReadonlyArray<CompressionAlg> = [
+    DeflateAlg,
+    LZMAAlg
+  ];
+  // Compression algorithm
+  compressionAlg: CompressionAlg = this.compressionAlgs[0];
+  // Page title
+  pageTitle = "";
+  // Set empty string as default input
+  inputText  = "";
+  // Set empty string as default output
+  outputText = "";
+  // Script
+  script = "";
   // Generated JavaScript code
   transpiledJsCode = "";
+  // Whether transpiled JS code is shown or not
+  showTranspiledJsCode = false;
   // Executable function which return result
-  private executableFunction: Function = function(){return "";};
-  enablePromiseWait: boolean = false; // TODO: impl
+  executableFunction: Function = function(){return "";};
+  // Enable click-run or not
+  // (click-run: Non-realtime/non-reactive evaluation)
+  enableClickRun = false;
+  // Use promise-wait or not
+  enablePromiseWait = false;
+  transpilers: ReadonlyArray<Transpiler> = [
+    RubyTranspiler,
+    // TODO: impl
+    // Es2017Transpiler,
+    // FuncEs2017Transpiler
+  ];
+  // Set transpiler
+  transpiler = this.transpilers[0];
+  // Error string
+  errorStr = "";
+  // Whether error string is shown or not
+  showError = true;
+  // Whether has error or not
+  hasError = false;
+  // Text of click-run button
+  clickRunButtonText = "";
+  // Use textarea instead of ace
+  useTextarea = false;
 
   mounted () {
-    console.log(this.script);
-    console.log(this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script));
+    // Get page title and code
+    const titleAndCode = parseLocationHash();
+    if (titleAndCode.urlOptions.includes("lzma")) {
+      this.compressionAlg = LZMAAlg;
+    }
+    // Set page title
+    this.pageTitle = titleAndCode.pageTitle;
+    // Set <title>
+    document.title   = titleAndCode.pageTitle;
+    // Set decoded location.hash as default script
+    this.script = decodeCode(titleAndCode.encodedCode, this.compressionAlg.decompress);
+    // Set enable-click-run
+    this.enableClickRun = titleAndCode.urlOptions.includes("click_run");
+    // Set enable-promise-wait
+    this.enablePromiseWait = titleAndCode.urlOptions.includes("promise_wait");
+    if (titleAndCode.urlOptions.includes("es2017")) {
+      // TODO: impl
+      // this.transpiler = Es2017Transpiler;
+    } else if (titleAndCode.urlOptions.includes("func_es2017")) {
+      // TODO: impl
+      // this.transpiler = FuncEs2017Transpiler;
+    }
+    // Initialize library
+    this.transpiler.initLibrary();
     // Set default value to global variable "INPUT"
     // TODO: duplicate code
     (window as any).INPUT = this.inputText;
+    // Set click-run button text
+    // TODO: impl
+    // this.clickRunButtonText = "Run" + (deviceDetector.isDesktop() ? (deviceDetector.os === "mac"? "(⌘+Enter)" : "(Ctrl+Enter)") : "");
     // If enable click_run is disable
     if (!this.enableClickRun) {
-      // Set transpile and initial output
-      this.transpile();
+      // Set default output
+      this.setOutputText();
     }
   }
 
