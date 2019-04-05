@@ -2,7 +2,7 @@
   <!-- TODO: Remove angular attributes start with "ng-" -->
   <div ng-controller="mainCtrl">
       <form class="pure-form pure-g">
-        <input type="text" ng-model="pageTitle" placeholder="App name" class="pure-u-11-12">
+        <input type="text" v-model="pageTitle" placeholder="App name" class="pure-u-11-12">
         <div class="pure-u-1-12" style="text-align: center">
           <img src="../assets/twitter.png" alt="Share on Twitter" ng-click="shareOnTwitter()" style="width: 2em; height: 2em;">
         </div>
@@ -67,10 +67,6 @@ const Opal = (window as any).Opal;
 const LZMA = (window as any).LZMA;
 // Get Babel
 const Babel = (window as any).Babel;
-
-(()=>{
-  console.log(Babel);
-})
 
 type CompressionAlg = {
   name: string,
@@ -224,10 +220,6 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
   }
 }
 
-// Initialize Opal
-// TODO: Move proper place
-RubyTranspiler.initLibrary();
-
 @Component
 export default class Nipp extends Vue {
   compressionAlgs: ReadonlyArray<CompressionAlg> = [
@@ -307,6 +299,14 @@ export default class Nipp extends Vue {
       // Set default output
       this.setOutputText();
     }
+  }
+
+  @Watch("pageTitle")
+  onChangePageTitle(): void {
+    // Set page title
+    document.title = this.pageTitle;
+    // Set location.hash
+    this.setLocationHash();
   }
 
   @Watch("script")
