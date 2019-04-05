@@ -17,7 +17,7 @@
       </div>
       <form class="pure-form pure-form-aligned">
         <label for="transpiler">Transpiler:</label>
-        <select id="transpiler" v-model="transpiler" v-on:change="onChangeTranspiler()" ng-model="transpiler">
+        <select id="transpiler" v-model="transpiler" v-on:change="onChangeTranspiler()">
           <option v-for="t in transpilers" v-bind:value="t" >{{ t.name }}</option>
         </select>
 
@@ -29,8 +29,6 @@
         <input type="checkbox" v-model="enableClickRun" v-on:change="setLocationHash()">: click_run
         <input type="checkbox" v-model="enablePromiseWait" v-on:change="setLocationHash()">: promise_wait
 
-<!--        <input type="checkbox" ng-model="useTextarea">: Use &lt;textarea&gt;-->
-
         <button ng-if="enableClickRun" ng-bind="::clickRunButtonText" ng-click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)"></button>
       </form>
 
@@ -39,20 +37,20 @@
         <textarea v-model="outputText" placeholder="Output" rows="10" class="pure-u-1 pure-u-md-1-2"></textarea>
       </form>
 
-      <button ng-click="setShowError(!showError)" ng-style="{color: hasError? 'red': ''}" class="pure-button">Show/Hide error</button>
-      <span ng-if="showError">
+      <button v-on:click="showError = !showError" v-bind:style="{color: hasError? 'red': ''}" class="pure-button">Show/Hide error</button>
+      <span v-if="showError">
         <div class="pure-g">
-          <textarea class="pure-u-1" ng-model="errorStr"></textarea>
+          <textarea v-model="errorStr" class="pure-u-1"></textarea>
         </div>
       </span>
 
-      <button ng-click="setShowTranspiledJsCode(!showTranspiledJsCode)" class="pure-button">Show/Hide transpiled JS code</button>
-      <span ng-if="showTranspiledJsCode">
+      <button v-on:click="showTranspiledJsCode = !showTranspiledJsCode" class="pure-button">Show/Hide transpiled JS code</button>
+      <span v-if="showTranspiledJsCode">
         <div class="pure-g">
           <div class="pure-u-1">
             <!-- TODO: Add proper Editor -->
             <!-- <div ace-editor="{mode: 'javascript'}" ng-if="!useTextarea" style="height:10em" ng-model="transpiledJsCode"></div> -->
-            <textarea ng-if="useTextarea" style="height:10em; width: 100%" ng-model="transpiledJsCode"></textarea>
+            <textarea v-model="transpiledJsCode" style="height:10em; width: 100%"></textarea>
           </div>
         </div>
       </span>
