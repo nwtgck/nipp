@@ -420,7 +420,7 @@ export default class Nipp extends Vue {
           output
             .then((res: any) => {
               Vue.nextTick(() => {
-                this.outputText = res;
+                this.outputText = res.toString();
                 // Set no error
                 this.errorStr = "";
                 this.hasError = false;
@@ -436,7 +436,7 @@ export default class Nipp extends Vue {
         }
       } else {
         // Set output text
-        this.outputText = output;
+        this.outputText = output.toString();
         // Set no error
         this.errorStr = "";
         this.hasError = false;
