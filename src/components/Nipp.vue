@@ -65,7 +65,12 @@ import * as pako from 'pako';
 const Opal = (window as any).Opal;
 // Get LZMA object
 const LZMA = (window as any).LZMA;
+// Get Babel
+const Babel = (window as any).Babel;
 
+(()=>{
+  console.log(Babel);
+})
 
 type CompressionAlg = {
   name: string,
@@ -130,6 +135,44 @@ const RubyTranspiler: Transpiler = {
     return {
       executableFunction: executableFunction,
       transpiledJsCode: transpiledJsCode
+    };
+  }
+};
+
+const Es2017Transpiler: Transpiler = {
+  name: "ES2017",
+  aceEditorMode: "javascript",
+  initLibrary: () => {},
+  getExecutableFunctionAndTranspiledJsCode: (script) => {
+    // Use javascript global variable "INPUT"
+    // (NOTE: `INPUT` will be pure JavaScript string variable)
+    const scriptWithInput = 'var s = window.INPUT;\n' + script;
+    // Transpile
+    const code = Babel.transform(scriptWithInput, {presets: ["es2017"]}).code;
+    return {
+      executableFunction: () => {
+        return eval(code);
+      },
+      transpiledJsCode: code
+    };
+  }
+};
+
+const FuncEs2017Transpiler: Transpiler = {
+  name: "ES2017 with Function",
+  aceEditorMode: "javascript",
+  initLibrary: () => {},
+  getExecutableFunctionAndTranspiledJsCode: (script: string) => {
+    // Use javascript global variable "INPUT"
+    // (NOTE: `INPUT` will be pure JavaScript string variable)
+    const scriptWithInput = 'var s = window.INPUT;\n' + script;
+    // Transpile
+    const code = Babel.transform(scriptWithInput, {presets: ["es2017"]}).code;
+    // Generate executable function
+    const executableFunction = new Function(code);
+    return {
+      executableFunction: executableFunction,
+      transpiledJsCode: code
     };
   }
 };
@@ -214,9 +257,8 @@ export default class Nipp extends Vue {
   enablePromiseWait = false;
   transpilers: ReadonlyArray<Transpiler> = [
     RubyTranspiler,
-    // TODO: impl
-    // Es2017Transpiler,
-    // FuncEs2017Transpiler
+    Es2017Transpiler,
+    FuncEs2017Transpiler
   ];
   // Set transpiler
   transpiler = this.transpilers[0];
@@ -248,11 +290,9 @@ export default class Nipp extends Vue {
     // Set enable-promise-wait
     this.enablePromiseWait = titleAndCode.urlOptions.includes("promise_wait");
     if (titleAndCode.urlOptions.includes("es2017")) {
-      // TODO: impl
-      // this.transpiler = Es2017Transpiler;
+      this.transpiler = Es2017Transpiler;
     } else if (titleAndCode.urlOptions.includes("func_es2017")) {
-      // TODO: impl
-      // this.transpiler = FuncEs2017Transpiler;
+      this.transpiler = FuncEs2017Transpiler;
     }
     // Initialize library
     this.transpiler.initLibrary();
@@ -291,13 +331,12 @@ export default class Nipp extends Vue {
   // Generate options part
   getUrlOptionsPart(): string {
     const options: string[] = [];
-    // TODO: impl
-    // // (NOTE: transpiler:ruby is default so it should be pushed)
-    // if ($scope.transpiler === Es2017Transpiler) {
-    //   options.push("es2017");
-    // } else  if ($scope.transpiler === FuncEs2017Transpiler) {
-    //   options.push("func_es2017");
-    // }
+    // (NOTE: transpiler:ruby is default so it should be pushed)
+    if (this.transpiler === Es2017Transpiler) {
+      options.push("es2017");
+    } else if (this.transpiler === FuncEs2017Transpiler) {
+      options.push("func_es2017");
+    }
     // (NOTE: compression:deflate is default so it should be pushed)
     if (this.compressionAlg === LZMAAlg) {
       options.push("lzma");

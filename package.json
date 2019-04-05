@@ -6,7 +6,8 @@
   "scripts": {
     "copy-opal": "copyfiles opal-cdn/opal/current/*.min.js public",
     "copy-lzma": "copyfiles node_modules/lzma/src/lzma_worker-min.js public",
-    "copy-scripts": "npm run copy-opal && npm run copy-lzma",
+    "copy-babel": "copyfiles node_modules/@babel/standalone/babel.min.js public",
+    "copy-scripts": "npm run copy-opal && npm run copy-lzma && npm run copy-babel",
     "serve": "npm run copy-scripts && vue-cli-service serve",
     "build": "npm run copy-scripts && vue-cli-service build",
     "test": "npm run test:unit",
@@ -23,6 +24,7 @@
   },
   "homepage": "https://github.com/nwtgck/nipp#readme",
   "dependencies": {
+    "@babel/standalone": "^7.4.3",
     "core-js": "^2.6.5",
     "lzma": "^2.3.2",
     "pako": "^1.0.10",
