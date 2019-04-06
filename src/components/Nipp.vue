@@ -9,9 +9,7 @@
 
     <div class="pure-g">
       <div class="pure-u-1">
-        <!-- TODO: Add proper Editor -->
-        <!-- <div ace-editor="{onLoad: onLoadScriptEditor, mode: transpiler.aceEditorMode, advanced: {tabSize: 2}}" ng-hide="useTextarea" style="height:10em" ng-model="script"></div> -->
-        <textarea v-model="script" style="height:10em; width: 100%" placeholder="Code"></textarea>
+        <codemirror v-model="script" v-on:change="onChangeScript()" :options="cmOptions"></codemirror>
       </div>
     </div>
     <form class="pure-form pure-form-aligned">
@@ -49,9 +47,7 @@
     <span v-if="showTranspiledJsCode">
       <div class="pure-g">
         <div class="pure-u-1">
-          <!-- TODO: Add proper Editor -->
-          <!-- <div ace-editor="{mode: 'javascript'}" ng-if="!useTextarea" style="height:10em" ng-model="transpiledJsCode"></div> -->
-          <textarea v-model="transpiledJsCode" style="height:10em; width: 100%"></textarea>
+          <codemirror v-model="transpiledJsCode" :options="{tabSize: 2, mode: 'text/javascript', lineNumbers: true, line: true, indentWithTabs: true}"></codemirror>
         </div>
       </div>
     </span>
@@ -62,6 +58,10 @@
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import * as pako from 'pako';
 import * as uaDeviceDetector from 'ua-device-detector';
+
+import 'codemirror/lib/codemirror.css'
+import 'codemirror/mode/ruby/ruby.js'
+import 'codemirror/mode/javascript/javascript.js'
 
 // Get Opal object
 const Opal = (window as any).Opal;
@@ -334,6 +334,18 @@ export default class Nipp extends Vue {
     this.setLocationHash();
     // Transpile
     this.transpile();
+  }
+
+  // CodeMirror options
+  get cmOptions() {
+    const mode = this.transpiler === RubyTranspiler ? 'text/ruby': 'text/javascript';
+    return {
+      tabSize: 2,
+      mode: mode,
+      lineNumbers: true,
+      line: true,
+      indentWithTabs: true,
+    };
   }
 
   setLocationHash() {
