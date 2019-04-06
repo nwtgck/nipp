@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.2c93c449d3cba29d5be42ccda88e8fc7.js"
+  "precache-manifest.0040243f731fddd12013bbb2394d535a.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "nipp"});
