@@ -9,7 +9,7 @@
 
     <div class="pure-g">
       <div class="pure-u-1">
-        <codemirror v-model="script" v-on:change="onChangeScript()" :options="cmOptions"></codemirror>
+        <codemirror v-model="script" v-on:change="onChangeScript()" :options="cmOptions" style="font-size: 1.2em;"></codemirror>
       </div>
     </div>
     <form class="pure-form pure-form-aligned">
@@ -338,7 +338,7 @@ export default class Nipp extends Vue {
 
   // CodeMirror options
   get cmOptions() {
-    const mode = this.transpiler === RubyTranspiler ? 'text/ruby': 'text/javascript';
+    const mode = this.transpiler === RubyTranspiler ? 'text/x-ruby': 'text/javascript';
     return {
       tabSize: 2,
       mode: mode,
