@@ -6,7 +6,7 @@
 npm run deploy
 ```
 
-## How to deploy to Firebase Hosting
+<!-- ## How to deploy to Firebase Hosting
 
 
 Install the command line tool. 
@@ -46,4 +46,4 @@ firebase deploy
 
 ## Why both `npm` and `bower` are used?
 
-Because `opal` is no longer maintained in npm. The latest version of `opal` is available on Bower.
+Because `opal` is no longer maintained in npm. The latest version of `opal` is available on Bower. -->

@@ -1,12 +1,12 @@
 # Nipp
-<img src="images/nipp-logo.svg" width="100"> 
+<img src="doc_assets/nipp-logo.svg" width="100"> 
 
 [![CircleCI](https://circleci.com/gh/nwtgck/nipp.svg?style=shield)](https://circleci.com/gh/nwtgck/nipp)
 
 Mini Application Hosted on URL <https://nwtgck.github.io/nipp/>  
 Nipp is inspired by [itty.bitty](https://github.com/alcor/itty-bitty).
 
-![Nipp Word Count](demo_images/nipp_word_count.gif)
+![Nipp Word Count](doc_assets/nipp_word_count.gif)
 
 ## Features
 * 🎒 **Portable**
@@ -44,7 +44,7 @@ Nipp is highly powered by [Opal], which is a transpiler to JavaScript. Thank you
 ## Also JavaScript Not Only Ruby
 
 Nipp is not only for Ruby. JavaScript is also available. Here is Tetris on Nipp!
-![Nipp Tetris](demo_images/nipp_tetris.gif)
+![Nipp Tetris](doc_assets/nipp_tetris.gif)
 
 Try on [https://nwtgck.github.io/nipp/#Tetris/es2017/bU9bTttAF...]
 The Tetris program is from an Japanese article - 
@@ -75,7 +75,7 @@ Note that `<Page Title>`, `<Options>` and <`Compressed Code`> are under URL frag
 
 Nipp runs even offline! Note that Nipp is available in flight mode ✈️.
 
-![Nipp PWA](demo_images/nipp_pwa.gif)
+![Nipp PWA](doc_assets/nipp_pwa.gif)
 
 
 ## Examples of `promise_wait`
