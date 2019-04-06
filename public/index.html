@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <title>Nipp</title>
+
+    <!-- Opal -->
+    <script src="opal-cdn/opal/current/opal.min.js"></script>
+    <script src="opal-cdn/opal/current/opal-parser.min.js"></script>
+    
+    <!-- Opal Libraries -->
+    <script src="opal-cdn/opal/current/base64.min.js"></script>
+    <script src="opal-cdn/opal/current/benchmark.min.js"></script>
+    <script src="opal-cdn/opal/current/bigdecimal.min.js"></script>
+    <script src="opal-cdn/opal/current/buffer.min.js"></script>
+    <script src="opal-cdn/opal/current/console.min.js"></script>
+    <script src="opal-cdn/opal/current/date.min.js"></script>
+    <script src="opal-cdn/opal/current/delegate.min.js"></script>
+    <script src="opal-cdn/opal/current/dir.min.js"></script>
+    <script src="opal-cdn/opal/current/encoding.min.js"></script>
+    <script src="opal-cdn/opal/current/enumerator.min.js"></script>
+    <script src="opal-cdn/opal/current/erb.min.js"></script>
+    <script src="opal-cdn/opal/current/file.min.js"></script>
+    <script src="opal-cdn/opal/current/fileutils.min.js"></script>
+    <script src="opal-cdn/opal/current/forwardable.min.js"></script>
+    <script src="opal-cdn/opal/current/headless_chrome.min.js"></script>
+    <script src="opal-cdn/opal/current/iconv.min.js"></script>
+    <script src="opal-cdn/opal/current/js.min.js"></script>
+    <script src="opal-cdn/opal/current/json.min.js"></script>
+    <script src="opal-cdn/opal/current/math.min.js"></script>
+    <script src="opal-cdn/opal/current/nashorn.min.js"></script>
+    <script src="opal-cdn/opal/current/native.min.js"></script>
+    <script src="opal-cdn/opal/current/nodejs.min.js"></script>
+    <script src="opal-cdn/opal/current/observer.min.js"></script>
+    <script src="opal-cdn/opal/current/opal-builder.min.js"></script>
+    <script src="opal-cdn/opal/current/ostruct.min.js"></script>
+    <script src="opal-cdn/opal/current/pathname.min.js"></script>
+    <script src="opal-cdn/opal/current/pp.min.js"></script>
+    <script src="opal-cdn/opal/current/promise.min.js"></script>
+    <script src="opal-cdn/opal/current/rbconfig.min.js"></script>
+    <script src="opal-cdn/opal/current/securerandom.min.js"></script>
+    <script src="opal-cdn/opal/current/set.min.js"></script>
+    <script src="opal-cdn/opal/current/singleton.min.js"></script>
+    <script src="opal-cdn/opal/current/stringio.min.js"></script>
+    <script src="opal-cdn/opal/current/strscan.min.js"></script>
+    <script src="opal-cdn/opal/current/template.min.js"></script>
+    <script src="opal-cdn/opal/current/thread.min.js"></script>
+    <script src="opal-cdn/opal/current/time.min.js"></script>
+    <script src="opal-cdn/opal/current/yaml.min.js"></script>
+
+    <!-- Babel (standalone) -->
+    <script src="node_modules/@babel/standalone/babel.min.js"></script>
+
+    <!-- LZMA -->
+    <!--  NOTE: LZMA-JS does not support require/import: This PR seem to be a support, but not merged : https://github.com/LZMA-JS/LZMA-JS/pull/60  -->
+    <script src="node_modules/lzma/src/lzma_worker-min.js"></script>
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but Nipp doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
