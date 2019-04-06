@@ -29,7 +29,7 @@
         <input type="checkbox" v-model="enableClickRun" v-on:change="setLocationHash()">: click_run
         <input type="checkbox" v-model="enablePromiseWait" v-on:change="setLocationHash()">: promise_wait
 
-        <button v-if="enableClickRun" v-on:click="setOutputText()" class="pure-button" style="color: white; background: rgb(28, 184, 65)">
+        <button v-if="enableClickRun" v-on:click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)">
           {{ clickRunButtonText }}
         </button>
       </form>
@@ -303,6 +303,15 @@ export default class Nipp extends Vue {
       // Set default output
       this.setOutputText();
     }
+
+    window.addEventListener('keydown', (e: WindowEventMap['keydown']) => {
+      if((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        Vue.nextTick(()=>{
+          // Run onclick click-run
+          this.onClickClickRun();
+        })
+      }
+    });
   }
 
   @Watch("pageTitle")
@@ -361,6 +370,12 @@ export default class Nipp extends Vue {
     }
     // Generate options part
     return options.join(",");
+  }
+
+  // (NOTE: this is not typo. onclick "click_run")
+  onClickClickRun() {
+    // Set output text
+    this.setOutputText();
   }
 
   onChangeTranspiler() {
@@ -454,7 +469,6 @@ export default class Nipp extends Vue {
     const url = 'https://twitter.com/share?text='+encodeURIComponent(this.pageTitle)+"&url=" + encodeURIComponent(location.href)+"&hashtags=nipp";
     window.open(url,'','scrollbars=yes,width=500,height=300,');
   };
-
 }
 </script>
 
