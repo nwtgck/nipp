@@ -33,7 +33,7 @@
     "register-service-worker": "^1.6.2",
     "ua-device-detector": "^1.1.5",
     "vue": "^2.6.6",
-    "vue-class-component": "^6.0.0",
+    "vue-class-component": "^7.0.2",
     "vue-codemirror": "^4.0.6",
     "vue-property-decorator": "^8.0.0"
   },
