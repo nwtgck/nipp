@@ -28,6 +28,7 @@
     "@babel/standalone": "^7.4.3",
     "core-js": "^2.6.5",
     "lzma": "^2.3.2",
+    "monaco-editor": "^0.16.2",
     "pako": "^1.0.10",
     "purecss": "^1.0.0",
     "register-service-worker": "^1.6.2",
@@ -35,6 +36,7 @@
     "vue": "^2.6.6",
     "vue-class-component": "^7.0.2",
     "vue-codemirror": "^4.0.6",
+    "vue-monaco": "^0.3.1",
     "vue-property-decorator": "^8.0.0"
   },
   "devDependencies": {
@@ -51,6 +53,8 @@
     "copyfiles": "^2.1.0",
     "gh-pages": "^2.0.1",
     "typescript": "^3.4.3",
-    "vue-template-compiler": "^2.5.21"
+    "vue-template-compiler": "^2.5.21",
+    "monaco-editor-webpack-plugin": "^1.7.0",
+    "webpack": "^4.30.0"
   }
 }
