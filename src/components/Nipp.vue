@@ -9,7 +9,12 @@
 
     <div class="pure-g">
       <div class="pure-u-1">
-        <codemirror v-model="script" v-on:change="onChangeScript()" :options="cmOptions" style="font-size: 1.2em;"></codemirror>
+        <!--  NOTE:  `:language=` is needed to highlight JavaScript -->
+        <monaco-editor v-model="script"
+                       v-on:change="onChangeScript()"
+                       :options="monacoOptions"
+                       :language="monacoOptions.language"
+                       style="width: 100%; height: 20em; border: #ccc solid 2px;" />
       </div>
     </div>
     <form class="pure-form pure-form-aligned">
@@ -58,10 +63,8 @@
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import * as pako from 'pako';
 import * as uaDeviceDetector from 'ua-device-detector';
-
-import 'codemirror/lib/codemirror.css'
-import 'codemirror/mode/ruby/ruby.js'
-import 'codemirror/mode/javascript/javascript.js'
+import * as monacoEditor from 'monaco-editor'
+import MonacoEditor from 'vue-monaco';
 
 // Get Opal object
 const Opal = (window as any).Opal;
@@ -223,7 +226,11 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
   }
 }
 
-@Component
+@Component({
+  components: {
+    MonacoEditor
+  }
+})
 export default class Nipp extends Vue {
   compressionAlgs: ReadonlyArray<CompressionAlg> = [
     DeflateAlg,
@@ -336,15 +343,14 @@ export default class Nipp extends Vue {
     this.transpile();
   }
 
-  // CodeMirror options
-  get cmOptions() {
-    const mode = this.transpiler === RubyTranspiler ? 'text/x-ruby': 'text/javascript';
+  // NOTE: { tabSize: number } is valid because: https://github.com/egoist/vue-monaco/blob/1c138c8acd9ab08dbbdcf34c88933bcc736f85da/example/index.js#L43
+  get monacoOptions(): monacoEditor.editor.IEditorConstructionOptions | { tabSize: number } {
+    const language = this.transpiler === RubyTranspiler ? 'ruby': 'javascript';
     return {
-      tabSize: 2,
-      mode: mode,
-      lineNumbers: true,
-      line: true,
-      indentWithTabs: true,
+      language: language,
+      minimap: { enabled: false },
+      fontSize: 15,
+      tabSize: 2
     };
   }
 
