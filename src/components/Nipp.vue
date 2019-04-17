@@ -7,15 +7,14 @@
       </div>
     </form>
 
-    <div class="pure-g">
-      <div class="pure-u-1">
-        <!--  NOTE:  `:language=` is needed to highlight JavaScript -->
-        <monaco-editor v-model="script"
-                       v-on:change="onChangeScript()"
-                       :options="monacoOptions"
-                       :language="monacoOptions.language"
-                       style="width: 100%; height: 20em; border: #ccc solid 2px;" />
-      </div>
+    <!--  Resizable: (base: https://stackoverflow.com/questions/47017753/monaco-editor-dynamically-resizable) -->
+    <div style="resize: vertical; overflow: auto; height: 20em;">
+      <!--  NOTE:  `:language=` is needed to highlight JavaScript -->
+      <monaco-editor v-model="script"
+                     v-on:change="onChangeScript()"
+                     :options="monacoOptions"
+                     :language="monacoOptions.language"
+                     style="width: 100%; ; height: 100%; border: #ccc solid 2px;" />
     </div>
     <form class="pure-form pure-form-aligned">
       <label for="transpiler">Transpiler:</label>
@@ -350,7 +349,8 @@ export default class Nipp extends Vue {
       language: language,
       minimap: { enabled: false },
       fontSize: 15,
-      tabSize: 2
+      tabSize: 2,
+      automaticLayout: true
     };
   }
 
