@@ -66,11 +66,6 @@ import * as uaDeviceDetector from 'ua-device-detector';
 import * as monacoEditor from 'monaco-editor'
 import MonacoEditor from 'vue-monaco';
 
-// TODO: Remove
-import 'codemirror/lib/codemirror.css'
-import 'codemirror/mode/ruby/ruby.js'
-import 'codemirror/mode/javascript/javascript.js'
-
 // Get Opal object
 const Opal = (window as any).Opal;
 // Get LZMA object
@@ -346,19 +341,6 @@ export default class Nipp extends Vue {
     this.setLocationHash();
     // Transpile
     this.transpile();
-  }
-
-  // CodeMirror options
-  // TODO: Remove
-  get cmOptions() {
-    const mode = this.transpiler === RubyTranspiler ? 'text/x-ruby': 'text/javascript';
-    return {
-      tabSize: 2,
-      mode: mode,
-      lineNumbers: true,
-      line: true,
-      indentWithTabs: true,
-    };
   }
 
   // NOTE: { tabSize: number } is valid because: https://github.com/egoist/vue-monaco/blob/1c138c8acd9ab08dbbdcf34c88933bcc736f85da/example/index.js#L43
