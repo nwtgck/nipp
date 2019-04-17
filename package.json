@@ -1,6 +1,6 @@
 {
   "name": "nipp",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Mini Application Hosted on URL",
   "private": true,
   "scripts": {
@@ -28,29 +28,32 @@
     "@babel/standalone": "^7.4.3",
     "core-js": "^2.6.5",
     "lzma": "^2.3.2",
+    "monaco-editor": "^0.16.2",
     "pako": "^1.0.10",
     "purecss": "^1.0.0",
     "register-service-worker": "^1.6.2",
     "ua-device-detector": "^1.1.5",
     "vue": "^2.6.6",
-    "vue-class-component": "^6.0.0",
-    "vue-codemirror": "^4.0.6",
+    "vue-class-component": "^7.0.2",
+    "vue-monaco": "^0.3.1",
     "vue-property-decorator": "^8.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.1.0",
     "@types/mocha": "^5.2.4",
     "@types/pako": "^1.0.1",
-    "@vue/cli-plugin-babel": "^3.5.0",
-    "@vue/cli-plugin-pwa": "^3.5.0",
-    "@vue/cli-plugin-typescript": "^3.5.0",
-    "@vue/cli-plugin-unit-mocha": "^3.5.0",
-    "@vue/cli-service": "^3.5.0",
+    "@vue/cli-plugin-babel": "^3.6.0",
+    "@vue/cli-plugin-pwa": "^3.6.0",
+    "@vue/cli-plugin-typescript": "^3.6.0",
+    "@vue/cli-plugin-unit-mocha": "^3.6.0",
+    "@vue/cli-service": "^3.6.0",
     "@vue/test-utils": "1.0.0-beta.29",
     "chai": "^4.1.2",
     "copyfiles": "^2.1.0",
     "gh-pages": "^2.0.1",
-    "typescript": "^3.2.1",
-    "vue-template-compiler": "^2.5.21"
+    "typescript": "^3.4.3",
+    "vue-template-compiler": "^2.5.21",
+    "monaco-editor-webpack-plugin": "^1.7.0",
+    "webpack": "^4.30.0"
   }
 }
