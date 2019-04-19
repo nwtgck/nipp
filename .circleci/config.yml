@@ -10,16 +10,19 @@ ANCHORS:
       - run: npm install
       # Check whether "run build" is successful
       - run: npm run build
+      - run: npm run test
 
 jobs:
   node_10:
     docker:
       - image: circleci/node:10
+      - image: selenium/standalone-chrome-debug:3.141.59
     <<: *node_steps
 
   node_8:
     docker:
       - image: circleci/node:8
+      - image: selenium/standalone-chrome-debug:3.141.59
     <<: *node_steps
 
   gh_page_deploy:
