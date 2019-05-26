@@ -8,6 +8,9 @@ Nipp is inspired by [itty.bitty](https://github.com/alcor/itty-bitty).
 
 ![Nipp Word Count](doc_assets/nipp_word_count.gif)
 
+## Purpose
+The main purpose is to **keep code safe in URL**. Even if the service is shutdown, the code stays alive in URL. You don't lose time and efforts to write a code. You can save a code as a bookmark easily.
+
 ## Features
 * 🎒 **Portable**
   - Application is hosted only on URL!
