@@ -1,6 +1,6 @@
 {
   "name": "nipp",
-  "version": "0.13.2",
+  "version": "0.13.3-SNAPSHOT",
   "description": "Mini Application Hosted on URL",
   "private": true,
   "scripts": {
