@@ -1,6 +1,6 @@
 {
   "name": "nipp",
-  "version": "0.13.3",
+  "version": "0.13.4",
   "description": "Mini Application Hosted on URL",
   "private": true,
   "scripts": {
@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/nwtgck/nipp#readme",
   "dependencies": {
-    "@babel/standalone": "^7.5.1",
+    "@babel/standalone": "^7.5.2",
     "core-js": "^2.6.5",
     "lzma": "^2.3.2",
     "monaco-editor": "^0.17.1",
@@ -51,9 +51,9 @@
     "chai": "^4.1.2",
     "copyfiles": "^2.1.0",
     "gh-pages": "^2.0.1",
-    "typescript": "^3.5.2",
+    "typescript": "^3.5.3",
     "vue-template-compiler": "^2.5.21",
     "monaco-editor-webpack-plugin": "^1.7.0",
-    "webpack": "^4.35.2"
+    "webpack": "^4.35.3"
   }
 }
