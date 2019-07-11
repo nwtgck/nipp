@@ -30,7 +30,7 @@
     "lzma": "^2.3.2",
     "monaco-editor": "^0.17.1",
     "pako": "^1.0.10",
-    "purecss": "^1.0.0",
+    "purecss": "^1.0.1",
     "register-service-worker": "^1.6.2",
     "ua-device-detector": "^1.1.6",
     "vue": "^2.6.6",
