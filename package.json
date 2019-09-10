@@ -52,7 +52,7 @@
     "copyfiles": "^2.1.1",
     "gh-pages": "^2.1.0",
     "monaco-editor-webpack-plugin": "^1.7.0",
-    "typescript": "^3.5.3",
+    "typescript": "^3.6.3",
     "vue-template-compiler": "^2.6.10",
     "webpack": "^4.39.1"
   }
