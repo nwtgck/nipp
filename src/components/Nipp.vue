@@ -64,7 +64,7 @@ import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 import * as pako from 'pako';
 import * as uaDeviceDetector from 'ua-device-detector';
 import * as monacoEditor from 'monaco-editor'
-import MonacoEditor from 'vue-monaco';
+const MonacoEditor = () => import('vue-monaco');
 import {loadScriptOnce} from "@/utils";
 
 // Get Opal object
