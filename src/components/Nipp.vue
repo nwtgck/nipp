@@ -9,12 +9,13 @@
 
     <!--  Resizable: (base: https://stackoverflow.com/questions/47017753/monaco-editor-dynamically-resizable) -->
     <div style="resize: vertical; overflow: auto; height: 20em;">
-      <!--  NOTE:  `:language=` is needed to highlight JavaScript -->
+      <!--  NOTE: `:language=` is needed to highlight JavaScript -->
+      <!--  NOTE: "height: 98%;" allows user to resize easier-->
       <monaco-editor v-model="script"
                      v-on:change="onChangeScript()"
                      :options="monacoOptions"
                      :language="monacoOptions.language"
-                     style="width: 100%; ; height: 100%; border: #ccc solid 2px;" />
+                     style="width: 100%; height: 98%; border: #ccc solid 2px; box-sizing: border-box;" />
     </div>
     <form class="pure-form pure-form-aligned">
       <label for="transpiler">Transpiler:</label>
