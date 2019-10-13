@@ -65,13 +65,61 @@ import * as pako from 'pako';
 import * as uaDeviceDetector from 'ua-device-detector';
 import * as monacoEditor from 'monaco-editor'
 import MonacoEditor from 'vue-monaco';
+import {loadScriptOnce} from "@/utils";
 
 // Get Opal object
-const Opal = (window as any).Opal;
+const OpalAsync = async () => {
+  await loadScriptOnce("opal-cdn/opal/current/opal.min.js");
+  await loadScriptOnce("opal-cdn/opal/current/opal-parser.min.js");
+  await Promise.all([
+    loadScriptOnce("opal-cdn/opal/current/base64.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/benchmark.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/bigdecimal.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/buffer.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/console.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/date.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/delegate.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/dir.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/encoding.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/enumerator.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/erb.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/file.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/fileutils.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/forwardable.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/headless_chrome.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/iconv.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/js.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/json.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/math.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/nashorn.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/native.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/nodejs.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/observer.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/opal-builder.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/ostruct.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/pathname.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/pp.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/promise.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/rbconfig.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/securerandom.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/set.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/singleton.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/stringio.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/strscan.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/template.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/thread.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/time.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/yaml.min.js"),
+  ]);
+  return (window as any).Opal;
+};
 // Get LZMA object
 const LZMA = (window as any).LZMA;
 // Get Babel
-const Babel = (window as any).Babel;
+const BabelAsync = async () => {
+  await loadScriptOnce("node_modules/@babel/standalone/babel.min.js");
+  return (window as any).Babel;
+};
 
 type CompressionAlg = {
   name: string,
@@ -111,19 +159,21 @@ const LZMAAlg: CompressionAlg = {
 type Transpiler = {
   name: string,
   aceEditorMode: string,
-  initLibrary: () => void,
-  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string) => { executableFunction: Function, transpiledJsCode: string }
+  initLibrary: () => Promise<void>,
+  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string) => Promise<{ executableFunction: Function, transpiledJsCode: string }>
 };
 
 // TODO: Move proper place
 const RubyTranspiler: Transpiler = {
   name: "Ruby",
   aceEditorMode: "ruby",
-  initLibrary: () => {
+  initLibrary: async () => {
+    const Opal = await OpalAsync();
     Opal.load('opal');
     Opal.load('opal-parser');
   },
-  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string) => {
+  getExecutableFunctionAndTranspiledJsCode: async (rubyScript: string) => {
+    const Opal = await OpalAsync();
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
     const rubyScriptWithInput = 's = `window.INPUT`\n' + rubyScript;
@@ -144,8 +194,9 @@ const RubyTranspiler: Transpiler = {
 const Es2017Transpiler: Transpiler = {
   name: "ES2017",
   aceEditorMode: "javascript",
-  initLibrary: () => {},
-  getExecutableFunctionAndTranspiledJsCode: (script) => {
+  initLibrary: () => Promise.resolve(),
+  getExecutableFunctionAndTranspiledJsCode: async (script) => {
+    const Babel = await BabelAsync();
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
     const scriptWithInput = 'var s = window.INPUT;\n' + script;
@@ -163,8 +214,9 @@ const Es2017Transpiler: Transpiler = {
 const FuncEs2017Transpiler: Transpiler = {
   name: "ES2017 with Function",
   aceEditorMode: "javascript",
-  initLibrary: () => {},
-  getExecutableFunctionAndTranspiledJsCode: (script: string) => {
+  initLibrary: () => Promise.resolve(),
+  getExecutableFunctionAndTranspiledJsCode: async (script: string) => {
+    const Babel = await BabelAsync();
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
     const scriptWithInput = 'var s = window.INPUT;\n' + script;
@@ -336,11 +388,11 @@ export default class Nipp extends Vue {
   }
 
   @Watch("script")
-  onChangeScript(): void {
+  async onChangeScript(): Promise<void> {
     // Set location.hash
     this.setLocationHash();
     // Transpile
-    this.transpile();
+    await this.transpile();
   }
 
   // NOTE: { tabSize: number } is valid because: https://github.com/egoist/vue-monaco/blob/1c138c8acd9ab08dbbdcf34c88933bcc736f85da/example/index.js#L43
@@ -397,21 +449,21 @@ export default class Nipp extends Vue {
     this.setOutputText();
   }
 
-  onChangeTranspiler() {
+  async onChangeTranspiler() {
     // Initialize library
     this.transpiler.initLibrary();
     // Ensure to call once
-    this.transpiler.initLibrary = () => {};
+    this.transpiler.initLibrary = () => Promise.resolve();
     // Update location.hash
     this.setLocationHash();
     // Transpile
-    this.transpile();
+    await this.transpile();
   }
 
-  transpile() {
+  async transpile() {
     try {
       // Transpile script and Set executable function
-      const executableFunctionAndTraspiledJsCode = this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script);
+      const executableFunctionAndTraspiledJsCode = await this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script);
       this.executableFunction = executableFunctionAndTraspiledJsCode.executableFunction;
       this.transpiledJsCode = executableFunctionAndTraspiledJsCode.transpiledJsCode;
       this.errorStr = "";
