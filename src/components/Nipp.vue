@@ -68,7 +68,6 @@ import MonacoEditor from 'vue-monaco';
 import {loadScriptOnce} from "@/utils";
 
 // Get Opal object
-// const OpalAsync = () => Promise.resolve((window as any).Opal);
 const OpalAsync = async () => {
   await loadScriptOnce("opal-cdn/opal/current/opal.min.js");
   await loadScriptOnce("opal-cdn/opal/current/opal-parser.min.js");
@@ -117,7 +116,10 @@ const OpalAsync = async () => {
 // Get LZMA object
 const LZMA = (window as any).LZMA;
 // Get Babel
-const BabelAsync = () => Promise.resolve((window as any).Babel);
+const BabelAsync = async () => {
+  await loadScriptOnce("node_modules/@babel/standalone/babel.min.js");
+  return (window as any).Babel;
+};
 
 type CompressionAlg = {
   name: string,
