@@ -61,7 +61,7 @@
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
-import * as pako from 'pako';
+const pakoAsync = () => import('pako');
 import * as uaDeviceDetector from 'ua-device-detector';
 import * as monacoEditor from 'monaco-editor'
 const MonacoEditor = () => import('vue-monaco');
@@ -114,7 +114,11 @@ const OpalAsync = async () => {
   return (window as any).Opal;
 };
 // Get LZMA object
-const LZMA = (window as any).LZMA;
+const LZMAAsync = async () => {
+  // NOTE: LZMA-JS does not support require/import: This PR seem to be a support, but not merged : https://github.com/LZMA-JS/LZMA-JS/pull/60
+  await loadScriptOnce('node_modules/lzma/src/lzma_worker-min.js');
+  return (window as any).LZMA;
+};
 // Get Babel
 const BabelAsync = async () => {
   await loadScriptOnce("node_modules/@babel/standalone/babel.min.js");
@@ -123,19 +127,21 @@ const BabelAsync = async () => {
 
 type CompressionAlg = {
   name: string,
-  compress: (raw: string) => string,
-  decompress: (compressed: string) => string
+  compress: (raw: string) => Promise<string>,
+  decompress: (compressed: string) => Promise<string>
 }
 
 const DeflateAlg: CompressionAlg = {
   name: "Deflate",
-  compress: (str: string) => {
+  compress: async (str: string) => {
+    const pako = await pakoAsync();
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
     const binStr = pako.deflate(str, {to: 'string', level: 9, windowBits: -8});
     return binStr;
   },
-  decompress: (binStr: string) => {
+  decompress: async (binStr: string) => {
+    const pako = await pakoAsync();
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
     return pako.inflate(binStr, {to: 'string', windowBits: -8});
@@ -144,14 +150,16 @@ const DeflateAlg: CompressionAlg = {
 
 const LZMAAlg: CompressionAlg = {
   name: "LZMA",
-  compress: (str: string) => {
+  compress: async (str: string) => {
+    const LZMA = await LZMAAsync();
     const compressed: string = LZMA.compress(str, 9);
     // (from: https://github.com/alcor/itty-bitty/blob/5292c4b7891939dab89412f9e474bca707c9bec5/data.js#L25)
     // TODO: Not use any in Uint8Array
     // TODO: Not use any in apply
     return String.fromCharCode.apply(null, new Uint8Array(compressed as any) as any);
   },
-  decompress: function(binStr) {
+  decompress: async function(binStr) {
+    const LZMA = await LZMAAsync();
     return LZMA.decompress(binStr.split('').map(function(c){return c.charCodeAt(0)}));
   }
 };
@@ -233,9 +241,9 @@ const FuncEs2017Transpiler: Transpiler = {
 
 
 // Encode code
-function encodeCode(code: string, compressor: (raw: string) => string) {
+async function encodeCode(code: string, compressor: (raw: string) => Promise<string>): Promise<string> {
   try {
-    const binStr = compressor(code);
+    const binStr = await compressor(code);
     return btoa(binStr);
   } catch (err) {
     return "";
@@ -243,11 +251,11 @@ function encodeCode(code: string, compressor: (raw: string) => string) {
 }
 
 // Decode code
-function decodeCode(encodedCode: string, decompressor: (compressed: string) => string) {
+async function decodeCode(encodedCode: string, decompressor: (compressed: string) => Promise<string>): Promise<string> {
   try {
     // Base64 => binary String
     const binStr = atob(encodedCode);
-    return decompressor(binStr);
+    return await decompressor(binStr);
   } catch (err) {
     return "";
   }
@@ -327,7 +335,7 @@ export default class Nipp extends Vue {
   // Use textarea instead of ace
   useTextarea = false;
 
-  mounted () {
+  async mounted () {
     // Get page title and code
     const titleAndCode = parseLocationHash();
     if (titleAndCode.urlOptions.includes("lzma")) {
@@ -338,7 +346,7 @@ export default class Nipp extends Vue {
     // Set <title>
     document.title   = titleAndCode.pageTitle;
     // Set decoded location.hash as default script
-    this.script = decodeCode(titleAndCode.encodedCode, this.compressionAlg.decompress);
+    this.script = await decodeCode(titleAndCode.encodedCode, this.compressionAlg.decompress);
     // Set enable-click-run
     this.enableClickRun = titleAndCode.urlOptions.includes("click_run");
     // Set enable-promise-wait
@@ -374,23 +382,23 @@ export default class Nipp extends Vue {
   }
 
   @Watch("pageTitle")
-  onChangePageTitle(): void {
+  async onChangePageTitle(): Promise<void> {
     // Set page title
     document.title = this.pageTitle;
     // Set location.hash
-    this.setLocationHash();
+    await this.setLocationHash();
   }
 
   @Watch('compressionAlg')
-  onChangeCompressionAlg() {
+  async onChangeCompressionAlg() {
     // Update location.hash
-    this.setLocationHash();
+    await this.setLocationHash();
   }
 
   @Watch("script")
   async onChangeScript(): Promise<void> {
     // Set location.hash
-    this.setLocationHash();
+    await this.setLocationHash();
     // Transpile
     await this.transpile();
   }
@@ -407,13 +415,13 @@ export default class Nipp extends Vue {
     };
   }
 
-  setLocationHash() {
+  async setLocationHash() {
     // Create title part
     const titlePart = (this.pageTitle).replace(/ /g, "_");
     // Create options part
     const urlOptionsPart = this.getUrlOptionsPart();
     // Encode code
-    const encodedCode = encodeCode(this.script, this.compressionAlg.compress);
+    const encodedCode = await encodeCode(this.script, this.compressionAlg.compress);
     // Change location hash to the code
     location.hash = titlePart+"/"+urlOptionsPart+"/"+encodedCode;
   }
@@ -455,7 +463,7 @@ export default class Nipp extends Vue {
     // Ensure to call once
     this.transpiler.initLibrary = () => Promise.resolve();
     // Update location.hash
-    this.setLocationHash();
+    await this.setLocationHash();
     // Transpile
     await this.transpile();
   }
@@ -482,7 +490,7 @@ export default class Nipp extends Vue {
 
   @Watch("inputText")
   onChangeInputText() {
-    // If enable click_run is disable
+    // If enable click_run is disableonChangePageTitle
     if (!this.enableClickRun) {
       // Set output text
       this.setOutputText();
