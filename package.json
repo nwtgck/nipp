@@ -39,7 +39,7 @@
     "vue-property-decorator": "^8.2.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.3",
+    "@types/chai": "^4.2.4",
     "@types/mocha": "^5.2.7",
     "@types/pako": "^1.0.1",
     "@vue/cli-plugin-babel": "^3.12.0",
