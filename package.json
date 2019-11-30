@@ -16,8 +16,8 @@
     "test": "npm run test:unit"
   },
   "dependencies": {
-    "@babel/standalone": "^7.6.4",
-    "core-js": "^3.4.3",
+    "@babel/standalone": "^7.7.4",
+    "core-js": "^3.4.5",
     "lzma": "^2.3.2",
     "monaco-editor": "^0.18.1",
     "pako": "^1.0.10",
@@ -27,10 +27,10 @@
     "vue": "^2.6.10",
     "vue-class-component": "^7.1.0",
     "vue-monaco": "^1.1.0",
-    "vue-property-decorator": "^8.2.2"
+    "vue-property-decorator": "^8.3.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.3",
+    "@types/chai": "^4.2.5",
     "@types/mocha": "^5.2.7",
     "@types/pako": "^1.0.1",
     "@vue/cli-plugin-babel": "^4.1.1",
@@ -38,14 +38,14 @@
     "@vue/cli-plugin-typescript": "^4.1.1",
     "@vue/cli-plugin-unit-mocha": "^4.1.1",
     "@vue/cli-service": "^4.1.1",
-    "@vue/test-utils": "^1.0.0-beta.29",
+    "@vue/test-utils": "^1.0.0-beta.30",
     "chai": "^4.2.0",
     "copyfiles": "^2.1.1",
     "gh-pages": "^2.1.1",
     "monaco-editor-webpack-plugin": "^1.7.0",
-    "typescript": "^3.6.4",
+    "typescript": "^3.7.2",
     "vue-template-compiler": "^2.6.10",
-    "webpack": "^4.41.1"
+    "webpack": "^4.41.2"
   },
   "bugs": {
     "url": "https://github.com/nwtgck/nipp/issues"
