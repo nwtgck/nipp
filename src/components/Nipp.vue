@@ -490,7 +490,7 @@ export default class Nipp extends Vue {
 
   @Watch("inputText")
   onChangeInputText() {
-    // If enable click_run is disableonChangePageTitle
+    // If enable click_run is disable
     if (!this.enableClickRun) {
       // Set output text
       this.setOutputText();
