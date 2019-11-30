@@ -61,33 +61,87 @@
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
-import * as pako from 'pako';
+const pakoAsync = () => import('pako');
 import * as uaDeviceDetector from 'ua-device-detector';
 import * as monacoEditor from 'monaco-editor'
-import MonacoEditor from 'vue-monaco';
+const MonacoEditor = () => import('vue-monaco');
+import {loadScriptOnce} from "@/utils";
 
 // Get Opal object
-const Opal = (window as any).Opal;
+const OpalAsync = async () => {
+  await loadScriptOnce("opal-cdn/opal/current/opal.min.js");
+  await loadScriptOnce("opal-cdn/opal/current/opal-parser.min.js");
+  await Promise.all([
+    loadScriptOnce("opal-cdn/opal/current/base64.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/benchmark.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/bigdecimal.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/buffer.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/console.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/date.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/delegate.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/dir.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/encoding.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/enumerator.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/erb.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/file.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/fileutils.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/forwardable.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/headless_chrome.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/iconv.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/js.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/json.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/math.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/nashorn.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/native.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/nodejs.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/observer.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/opal-builder.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/ostruct.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/pathname.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/pp.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/promise.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/rbconfig.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/securerandom.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/set.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/singleton.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/stringio.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/strscan.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/template.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/thread.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/time.min.js"),
+    loadScriptOnce("opal-cdn/opal/current/yaml.min.js"),
+  ]);
+  return (window as any).Opal;
+};
 // Get LZMA object
-const LZMA = (window as any).LZMA;
+const LZMAAsync = async () => {
+  // NOTE: LZMA-JS does not support require/import: This PR seem to be a support, but not merged : https://github.com/LZMA-JS/LZMA-JS/pull/60
+  await loadScriptOnce('node_modules/lzma/src/lzma_worker-min.js');
+  return (window as any).LZMA;
+};
 // Get Babel
-const Babel = (window as any).Babel;
+const BabelAsync = async () => {
+  await loadScriptOnce("node_modules/@babel/standalone/babel.min.js");
+  return (window as any).Babel;
+};
 
 type CompressionAlg = {
   name: string,
-  compress: (raw: string) => string,
-  decompress: (compressed: string) => string
+  compress: (raw: string) => Promise<string>,
+  decompress: (compressed: string) => Promise<string>
 }
 
 const DeflateAlg: CompressionAlg = {
   name: "Deflate",
-  compress: (str: string) => {
+  compress: async (str: string) => {
+    const pako = await pakoAsync();
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
     const binStr = pako.deflate(str, {to: 'string', level: 9, windowBits: -8});
     return binStr;
   },
-  decompress: (binStr: string) => {
+  decompress: async (binStr: string) => {
+    const pako = await pakoAsync();
     // NOTE: Negative windowBits means no header and no checksum
     // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
     return pako.inflate(binStr, {to: 'string', windowBits: -8});
@@ -96,14 +150,16 @@ const DeflateAlg: CompressionAlg = {
 
 const LZMAAlg: CompressionAlg = {
   name: "LZMA",
-  compress: (str: string) => {
+  compress: async (str: string) => {
+    const LZMA = await LZMAAsync();
     const compressed: string = LZMA.compress(str, 9);
     // (from: https://github.com/alcor/itty-bitty/blob/5292c4b7891939dab89412f9e474bca707c9bec5/data.js#L25)
     // TODO: Not use any in Uint8Array
     // TODO: Not use any in apply
     return String.fromCharCode.apply(null, new Uint8Array(compressed as any) as any);
   },
-  decompress: function(binStr) {
+  decompress: async function(binStr) {
+    const LZMA = await LZMAAsync();
     return LZMA.decompress(binStr.split('').map(function(c){return c.charCodeAt(0)}));
   }
 };
@@ -111,19 +167,21 @@ const LZMAAlg: CompressionAlg = {
 type Transpiler = {
   name: string,
   aceEditorMode: string,
-  initLibrary: () => void,
-  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string) => { executableFunction: Function, transpiledJsCode: string }
+  initLibrary: () => Promise<void>,
+  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string) => Promise<{ executableFunction: Function, transpiledJsCode: string }>
 };
 
 // TODO: Move proper place
 const RubyTranspiler: Transpiler = {
   name: "Ruby",
   aceEditorMode: "ruby",
-  initLibrary: () => {
+  initLibrary: async () => {
+    const Opal = await OpalAsync();
     Opal.load('opal');
     Opal.load('opal-parser');
   },
-  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string) => {
+  getExecutableFunctionAndTranspiledJsCode: async (rubyScript: string) => {
+    const Opal = await OpalAsync();
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
     const rubyScriptWithInput = 's = `window.INPUT`\n' + rubyScript;
@@ -144,8 +202,9 @@ const RubyTranspiler: Transpiler = {
 const Es2017Transpiler: Transpiler = {
   name: "ES2017",
   aceEditorMode: "javascript",
-  initLibrary: () => {},
-  getExecutableFunctionAndTranspiledJsCode: (script) => {
+  initLibrary: () => Promise.resolve(),
+  getExecutableFunctionAndTranspiledJsCode: async (script) => {
+    const Babel = await BabelAsync();
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
     const scriptWithInput = 'var s = window.INPUT;\n' + script;
@@ -163,8 +222,9 @@ const Es2017Transpiler: Transpiler = {
 const FuncEs2017Transpiler: Transpiler = {
   name: "ES2017 with Function",
   aceEditorMode: "javascript",
-  initLibrary: () => {},
-  getExecutableFunctionAndTranspiledJsCode: (script: string) => {
+  initLibrary: () => Promise.resolve(),
+  getExecutableFunctionAndTranspiledJsCode: async (script: string) => {
+    const Babel = await BabelAsync();
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
     const scriptWithInput = 'var s = window.INPUT;\n' + script;
@@ -181,9 +241,9 @@ const FuncEs2017Transpiler: Transpiler = {
 
 
 // Encode code
-function encodeCode(code: string, compressor: (raw: string) => string) {
+async function encodeCode(code: string, compressor: (raw: string) => Promise<string>): Promise<string> {
   try {
-    const binStr = compressor(code);
+    const binStr = await compressor(code);
     return btoa(binStr);
   } catch (err) {
     return "";
@@ -191,11 +251,11 @@ function encodeCode(code: string, compressor: (raw: string) => string) {
 }
 
 // Decode code
-function decodeCode(encodedCode: string, decompressor: (compressed: string) => string) {
+async function decodeCode(encodedCode: string, decompressor: (compressed: string) => Promise<string>): Promise<string> {
   try {
     // Base64 => binary String
     const binStr = atob(encodedCode);
-    return decompressor(binStr);
+    return await decompressor(binStr);
   } catch (err) {
     return "";
   }
@@ -275,7 +335,7 @@ export default class Nipp extends Vue {
   // Use textarea instead of ace
   useTextarea = false;
 
-  mounted () {
+  async mounted () {
     // Get page title and code
     const titleAndCode = parseLocationHash();
     if (titleAndCode.urlOptions.includes("lzma")) {
@@ -286,7 +346,7 @@ export default class Nipp extends Vue {
     // Set <title>
     document.title   = titleAndCode.pageTitle;
     // Set decoded location.hash as default script
-    this.script = decodeCode(titleAndCode.encodedCode, this.compressionAlg.decompress);
+    this.script = await decodeCode(titleAndCode.encodedCode, this.compressionAlg.decompress);
     // Set enable-click-run
     this.enableClickRun = titleAndCode.urlOptions.includes("click_run");
     // Set enable-promise-wait
@@ -322,25 +382,25 @@ export default class Nipp extends Vue {
   }
 
   @Watch("pageTitle")
-  onChangePageTitle(): void {
+  async onChangePageTitle(): Promise<void> {
     // Set page title
     document.title = this.pageTitle;
     // Set location.hash
-    this.setLocationHash();
+    await this.setLocationHash();
   }
 
   @Watch('compressionAlg')
-  onChangeCompressionAlg() {
+  async onChangeCompressionAlg() {
     // Update location.hash
-    this.setLocationHash();
+    await this.setLocationHash();
   }
 
   @Watch("script")
-  onChangeScript(): void {
+  async onChangeScript(): Promise<void> {
     // Set location.hash
-    this.setLocationHash();
+    await this.setLocationHash();
     // Transpile
-    this.transpile();
+    await this.transpile();
   }
 
   // NOTE: { tabSize: number } is valid because: https://github.com/egoist/vue-monaco/blob/1c138c8acd9ab08dbbdcf34c88933bcc736f85da/example/index.js#L43
@@ -355,13 +415,13 @@ export default class Nipp extends Vue {
     };
   }
 
-  setLocationHash() {
+  async setLocationHash() {
     // Create title part
     const titlePart = (this.pageTitle).replace(/ /g, "_");
     // Create options part
     const urlOptionsPart = this.getUrlOptionsPart();
     // Encode code
-    const encodedCode = encodeCode(this.script, this.compressionAlg.compress);
+    const encodedCode = await encodeCode(this.script, this.compressionAlg.compress);
     // Change location hash to the code
     location.hash = titlePart+"/"+urlOptionsPart+"/"+encodedCode;
   }
@@ -397,21 +457,21 @@ export default class Nipp extends Vue {
     this.setOutputText();
   }
 
-  onChangeTranspiler() {
+  async onChangeTranspiler() {
     // Initialize library
     this.transpiler.initLibrary();
     // Ensure to call once
-    this.transpiler.initLibrary = () => {};
+    this.transpiler.initLibrary = () => Promise.resolve();
     // Update location.hash
-    this.setLocationHash();
+    await this.setLocationHash();
     // Transpile
-    this.transpile();
+    await this.transpile();
   }
 
-  transpile() {
+  async transpile() {
     try {
       // Transpile script and Set executable function
-      const executableFunctionAndTraspiledJsCode = this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script);
+      const executableFunctionAndTraspiledJsCode = await this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script);
       this.executableFunction = executableFunctionAndTraspiledJsCode.executableFunction;
       this.transpiledJsCode = executableFunctionAndTraspiledJsCode.transpiledJsCode;
       this.errorStr = "";
