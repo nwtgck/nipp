@@ -1,32 +1,23 @@
 {
   "name": "nipp",
   "version": "0.13.6-SNAPSHOT",
-  "description": "Mini Application Hosted on URL",
   "private": true,
+  "description": "Mini Application Hosted on URL",
+  "author": "Ryo Ota <nwtgck@gmail.com> (https://github.com/nwtgck)",
   "scripts": {
-    "copy-opal": "copyfiles opal-cdn/opal/current/*.min.js public",
-    "copy-lzma": "copyfiles node_modules/lzma/src/lzma_worker-min.js public",
-    "copy-babel": "copyfiles node_modules/@babel/standalone/babel.min.js public",
-    "copy-scripts": "npm run copy-opal && npm run copy-lzma && npm run copy-babel",
     "serve": "npm run copy-scripts && vue-cli-service serve",
     "build": "npm run copy-scripts && vue-cli-service build",
-    "test": "npm run test:unit",
     "test:unit": "vue-cli-service test:unit",
-    "deploy": "npm run build && gh-pages -m '[AUTO] Upload pages' -d dist -a"
+    "deploy": "npm run build && gh-pages -m '[AUTO] Upload pages' -d dist -a",
+    "copy-babel": "copyfiles node_modules/@babel/standalone/babel.min.js public",
+    "copy-lzma": "copyfiles node_modules/lzma/src/lzma_worker-min.js public",
+    "copy-opal": "copyfiles opal-cdn/opal/current/*.min.js public",
+    "copy-scripts": "npm run copy-opal && npm run copy-lzma && npm run copy-babel",
+    "test": "npm run test:unit"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nwtgck/nipp.git"
-  },
-  "author": "Ryo Ota <nwtgck@gmail.com> (https://github.com/nwtgck)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/nwtgck/nipp/issues"
-  },
-  "homepage": "https://github.com/nwtgck/nipp#readme",
   "dependencies": {
     "@babel/standalone": "^7.6.4",
-    "core-js": "^2.6.5",
+    "core-js": "^3.4.3",
     "lzma": "^2.3.2",
     "monaco-editor": "^0.18.1",
     "pako": "^1.0.10",
@@ -42,11 +33,11 @@
     "@types/chai": "^4.2.3",
     "@types/mocha": "^5.2.7",
     "@types/pako": "^1.0.1",
-    "@vue/cli-plugin-babel": "^3.12.0",
-    "@vue/cli-plugin-pwa": "^3.12.0",
-    "@vue/cli-plugin-typescript": "^3.12.0",
-    "@vue/cli-plugin-unit-mocha": "^3.12.0",
-    "@vue/cli-service": "^3.12.0",
+    "@vue/cli-plugin-babel": "^4.1.1",
+    "@vue/cli-plugin-pwa": "^4.1.1",
+    "@vue/cli-plugin-typescript": "^4.1.1",
+    "@vue/cli-plugin-unit-mocha": "^4.1.1",
+    "@vue/cli-service": "^4.1.1",
     "@vue/test-utils": "^1.0.0-beta.29",
     "chai": "^4.2.0",
     "copyfiles": "^2.1.1",
@@ -55,5 +46,14 @@
     "typescript": "^3.6.4",
     "vue-template-compiler": "^2.6.10",
     "webpack": "^4.41.1"
+  },
+  "bugs": {
+    "url": "https://github.com/nwtgck/nipp/issues"
+  },
+  "homepage": "https://github.com/nwtgck/nipp#readme",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nwtgck/nipp.git"
   }
 }
