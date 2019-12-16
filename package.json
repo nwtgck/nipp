@@ -45,7 +45,7 @@
     "monaco-editor-webpack-plugin": "^1.7.0",
     "typescript": "^3.7.2",
     "vue-template-compiler": "^2.6.10",
-    "webpack": "^4.41.2"
+    "webpack": "^4.41.3"
   },
   "bugs": {
     "url": "https://github.com/nwtgck/nipp/issues"
