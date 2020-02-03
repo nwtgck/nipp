@@ -23,7 +23,7 @@
     "pako": "^1.0.10",
     "purecss": "^1.0.1",
     "register-service-worker": "^1.6.2",
-    "ua-device-detector": "^1.1.7",
+    "ua-device-detector": "^1.1.8",
     "vue": "^2.6.11",
     "vue-class-component": "^7.1.0",
     "vue-monaco": "^1.1.0",
