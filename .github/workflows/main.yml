@@ -11,6 +11,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      # (from: https://github.com/actions/checkout/tree/f95f2a38561736d1542cb9fbf736eea3d00ab5a6#checkout-submodules)
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
