@@ -30,7 +30,7 @@
     "vue-property-decorator": "^8.4.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.8",
+    "@types/chai": "^4.2.9",
     "@types/mocha": "^7.0.1",
     "@types/pako": "^1.0.1",
     "@vue/cli-plugin-babel": "^4.1.2",
