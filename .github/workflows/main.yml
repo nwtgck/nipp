@@ -27,7 +27,7 @@ jobs:
         run: 'echo "google-site-verification: ${{ secrets.GOOGLE_SITE_VERIFICATION_CODE }}.html" > dist/${{ secrets.GOOGLE_SITE_VERIFICATION_CODE }}.html'
 
       - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v0.2.0
+        uses: nwtgck/actions-netlify@v1.1
         with:
           publish-dir: './dist'
           production-branch: master
