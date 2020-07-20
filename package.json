@@ -25,7 +25,7 @@
     "register-service-worker": "^1.6.2",
     "ua-device-detector": "^1.1.8",
     "vue": "^2.6.11",
-    "vue-class-component": "^7.2.2",
+    "vue-class-component": "^7.2.4",
     "vue-monaco": "^1.1.0",
     "vue-property-decorator": "^8.4.0"
   },
