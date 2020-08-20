@@ -24,7 +24,7 @@
     "purecss": "^1.0.1",
     "register-service-worker": "^1.6.2",
     "ua-device-detector": "^1.1.8",
-    "vue": "^2.6.11",
+    "vue": "^2.6.12",
     "vue-class-component": "^7.2.2",
     "vue-monaco": "^1.1.0",
     "vue-property-decorator": "^8.4.0"
@@ -44,7 +44,7 @@
     "gh-pages": "^2.2.0",
     "monaco-editor-webpack-plugin": "^1.7.0",
     "typescript": "^3.7.5",
-    "vue-template-compiler": "^2.6.11",
+    "vue-template-compiler": "^2.6.12",
     "webpack": "^4.41.5"
   },
   "bugs": {
