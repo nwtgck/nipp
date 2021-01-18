@@ -19,7 +19,7 @@
     "@babel/standalone": "^7.8.4",
     "core-js": "^3.6.4",
     "lzma": "^2.3.2",
-    "monaco-editor": "^0.18.1",
+    "monaco-editor": "^0.21.3",
     "pako": "^1.0.11",
     "purecss": "^1.0.1",
     "register-service-worker": "^1.6.2",
