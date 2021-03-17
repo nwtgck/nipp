@@ -37,7 +37,7 @@
     "@vue/cli-plugin-pwa": "^4.1.2",
     "@vue/cli-plugin-typescript": "^4.1.2",
     "@vue/cli-plugin-unit-mocha": "^4.1.2",
-    "@vue/cli-service": "^4.1.2",
+    "@vue/cli-service": "^4.5.12",
     "@vue/test-utils": "^1.0.0-beta.31",
     "chai": "^4.2.0",
     "copyfiles": "^2.2.0",
