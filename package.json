@@ -16,7 +16,7 @@
     "test": "npm run test:unit"
   },
   "dependencies": {
-    "@babel/standalone": "^7.8.4",
+    "@babel/standalone": "^7.13.16",
     "core-js": "^3.6.4",
     "lzma": "^2.3.2",
     "monaco-editor": "^0.18.1",
