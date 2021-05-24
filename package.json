@@ -41,7 +41,7 @@
     "@vue/test-utils": "^1.0.0-beta.31",
     "chai": "^4.2.0",
     "copyfiles": "^2.2.0",
-    "gh-pages": "^2.2.0",
+    "gh-pages": "^3.2.0",
     "monaco-editor-webpack-plugin": "^1.7.0",
     "typescript": "^3.7.5",
     "vue-template-compiler": "^2.6.11",
