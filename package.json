@@ -3,7 +3,7 @@
   "version": "0.13.8-SNAPSHOT",
   "private": true,
   "description": "Mini Application Hosted on URL",
-  "author": "Ryo Ota <nwtgck@gmail.com> (https://github.com/nwtgck)",
+  "author": "Ryo Ota <nwtgck@nwtgck.org> (https://github.com/nwtgck)",
   "scripts": {
     "serve": "npm run copy-scripts && vue-cli-service serve",
     "build": "npm run copy-scripts && vue-cli-service build",
