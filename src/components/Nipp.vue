@@ -481,7 +481,7 @@ export default class Nipp extends Vue {
         // Set output text
         this.setOutputText();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log("Transpile compile", err);
       this.errorStr = err.toString();
       this.hasError = true;
@@ -535,7 +535,7 @@ export default class Nipp extends Vue {
         this.errorStr = "";
         this.hasError = false;
       }
-    } catch (err) {
+    } catch (err: any) {
       // console.log("JS Runtime error", err);
       this.outputText = "";
       this.errorStr = err.toString();
