@@ -1,6 +1,6 @@
 {
   "name": "nipp",
-  "version": "0.15.0",
+  "version": "0.15.1-SNAPSHOT",
   "private": true,
   "description": "Mini Application Hosted on URL",
   "author": "Ryo Ota <nwtgck@nwtgck.org> (https://github.com/nwtgck)",
