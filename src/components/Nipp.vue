@@ -52,7 +52,7 @@
     <span v-if="showTranspiledJsCode">
       <div class="pure-g">
         <div class="pure-u-1">
-          <codemirror v-model="transpiledJsCode" :options="{tabSize: 2, mode: 'text/javascript', lineNumbers: true, line: true, indentWithTabs: true}"></codemirror>
+          <monaco-editor :value="transpiledJsCode" language="javascript" :options="{ fontSize: 12, minimap: { enabled: false } }" style="min-height: 5rem;"/>
         </div>
       </div>
     </span>
@@ -116,12 +116,12 @@ const OpalAsync = async () => {
 // Get LZMA object
 const LZMAAsync = async () => {
   // NOTE: LZMA-JS does not support require/import: This PR seem to be a support, but not merged : https://github.com/LZMA-JS/LZMA-JS/pull/60
-  await loadScriptOnce('node_modules/lzma/src/lzma_worker-min.js');
+  await loadScriptOnce('copied_js/lzma_worker-min.js');
   return (window as any).LZMA;
 };
 // Get Babel
 const BabelAsync = async () => {
-  await loadScriptOnce("node_modules/@babel/standalone/babel.min.js");
+  await loadScriptOnce("copied_js/babel.min.js");
   return (window as any).Babel;
 };
 
@@ -404,7 +404,7 @@ export default class Nipp extends Vue {
   }
 
   // NOTE: { tabSize: number } is valid because: https://github.com/egoist/vue-monaco/blob/1c138c8acd9ab08dbbdcf34c88933bcc736f85da/example/index.js#L43
-  get monacoOptions(): monacoEditor.editor.IEditorConstructionOptions | { tabSize: number } {
+  get monacoOptions(): monacoEditor.editor.IEditorConstructionOptions & { language: string } | { tabSize: number } {
     const language = this.transpiler === RubyTranspiler ? 'ruby': 'javascript';
     return {
       language: language,
@@ -481,8 +481,8 @@ export default class Nipp extends Vue {
         // Set output text
         this.setOutputText();
       }
-    } catch (err) {
-      console.log("Transpile compile", err);
+    } catch (err: any) {
+      // console.log("Transpile compile", err);
       this.errorStr = err.toString();
       this.hasError = true;
     }
@@ -535,8 +535,8 @@ export default class Nipp extends Vue {
         this.errorStr = "";
         this.hasError = false;
       }
-    } catch (err) {
-      console.log("JS Runtime error", err);
+    } catch (err: any) {
+      // console.log("JS Runtime error", err);
       this.outputText = "";
       this.errorStr = err.toString();
       this.hasError = true;
