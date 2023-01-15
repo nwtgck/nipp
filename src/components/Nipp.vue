@@ -205,14 +205,45 @@ const Es2017Transpiler: Transpiler = {
   initLibrary: () => Promise.resolve(),
   getExecutableFunctionAndTranspiledJsCode: async (script) => {
     const Babel = await BabelAsync();
-    // Use javascript global variable "INPUT"
-    // (NOTE: `INPUT` will be pure JavaScript string variable)
-    const scriptWithInput = 'var s = window.INPUT;\n' + script;
+    const presets = ["es2017"];
+    // Find last expression statement
+    let lastExpressionStatementPath: any | undefined;
+    const lastFinderPlugin = (b: any) => {
+      return {
+        visitor: {
+          ExpressionStatement(path: any) {
+            if (!path.findParent((p: any) => p.isFunction())) {
+              lastExpressionStatementPath = path;
+            }
+          },
+        },
+      };
+    };
+    Babel.transform(script, {
+      presets,
+      plugins: [ lastFinderPlugin ],
+    });
     // Transpile
-    const code = Babel.transform(scriptWithInput, {presets: ["es2017"]}).code;
+    const code = Babel.transform(script, {
+      presets,
+      plugins: [
+        (b: any) => ({
+          visitor: {
+            ExpressionStatement(path: any) {
+              if (path.node.expression.start === lastExpressionStatementPath?.node.expression.start && path.node.expression.end === lastExpressionStatementPath?.node.expression.end) {
+                // Attach "return" to the last statement. (e.g. 10 → return 10;)
+                path.replaceWith(b.types.returnStatement(path.node.expression));
+              }
+            },
+          },
+        })
+      ],
+    }).code;
+    const executableFunction = new Function("s", code);
     return {
       executableFunction: () => {
-        return eval(code);
+        // (NOTE: `INPUT` will be pure JavaScript string variable)
+        return executableFunction((window as any).INPUT);
       },
       transpiledJsCode: code
     };
