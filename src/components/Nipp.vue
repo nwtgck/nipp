@@ -404,7 +404,7 @@ export default class Nipp extends Vue {
   }
 
   // NOTE: { tabSize: number } is valid because: https://github.com/egoist/vue-monaco/blob/1c138c8acd9ab08dbbdcf34c88933bcc736f85da/example/index.js#L43
-  get monacoOptions(): monacoEditor.editor.IEditorConstructionOptions | { tabSize: number } {
+  get monacoOptions(): monacoEditor.editor.IEditorConstructionOptions & { language: string } | { tabSize: number } {
     const language = this.transpiler === RubyTranspiler ? 'ruby': 'javascript';
     return {
       language: language,

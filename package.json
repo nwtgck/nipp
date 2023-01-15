@@ -19,14 +19,14 @@
     "@babel/standalone": "^7.8.4",
     "core-js": "^3.6.4",
     "lzma": "^2.3.2",
-    "monaco-editor": "^0.15.1",
+    "monaco-editor": "^0.20.0",
     "pako": "^1.0.11",
     "purecss": "^1.0.1",
     "register-service-worker": "^1.6.2",
     "ua-device-detector": "^1.1.8",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.2",
-    "vue-monaco": "^1.1.0",
+    "vue-monaco": "^1.2.2",
     "vue-property-decorator": "^8.4.0"
   },
   "devDependencies": {
@@ -42,7 +42,7 @@
     "chai": "^4.2.0",
     "copyfiles": "^2.2.0",
     "gh-pages": "^2.2.0",
-    "monaco-editor-webpack-plugin": "^1.7.0",
+    "monaco-editor-webpack-plugin": "1.9",
     "typescript": "^3.7.5",
     "vue-template-compiler": "^2.6.11",
     "webpack": "^4.41.5"
