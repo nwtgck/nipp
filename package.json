@@ -44,8 +44,7 @@
     "gh-pages": "^2.2.0",
     "monaco-editor-webpack-plugin": "1.9",
     "typescript": "^4.9.4",
-    "vue-template-compiler": "^2.6.11",
-    "webpack": "^4.41.5"
+    "vue-template-compiler": "^2.6.11"
   },
   "bugs": {
     "url": "https://github.com/nwtgck/nipp/issues"
