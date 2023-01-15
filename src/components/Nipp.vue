@@ -52,7 +52,7 @@
     <span v-if="showTranspiledJsCode">
       <div class="pure-g">
         <div class="pure-u-1">
-          <codemirror v-model="transpiledJsCode" :options="{tabSize: 2, mode: 'text/javascript', lineNumbers: true, line: true, indentWithTabs: true}"></codemirror>
+          <monaco-editor :value="transpiledJsCode" language="javascript" :options="{ fontSize: 12, minimap: { enabled: false } }" style="min-height: 5rem;"/>
         </div>
       </div>
     </span>
