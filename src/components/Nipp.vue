@@ -17,7 +17,7 @@
                      :language="monacoOptions.language"
                      style="width: 100%; height: 98%; border: #ccc solid 2px; box-sizing: border-box;" />
     </div>
-    <form class="pure-form pure-form-aligned">
+    <form onsubmit="return false" class="pure-form pure-form-aligned">
       <label for="transpiler">Transpiler:</label>
       <select id="transpiler" v-model="transpiler" v-on:change="onChangeTranspiler()">
         <option v-for="t in transpilers" v-bind:value="t" >{{ t.name }}</option>
