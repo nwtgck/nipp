@@ -482,7 +482,7 @@ export default class Nipp extends Vue {
         this.setOutputText();
       }
     } catch (err: any) {
-      console.log("Transpile compile", err);
+      // console.log("Transpile compile", err);
       this.errorStr = err.toString();
       this.hasError = true;
     }
