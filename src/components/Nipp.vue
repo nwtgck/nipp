@@ -17,7 +17,7 @@
                      :language="monacoOptions.language"
                      style="width: 100%; height: 98%; border: #ccc solid 2px; box-sizing: border-box;" />
     </div>
-    <form class="pure-form pure-form-aligned">
+    <form onsubmit="return false" class="pure-form pure-form-aligned">
       <label for="transpiler">Transpiler:</label>
       <select id="transpiler" v-model="transpiler" v-on:change="onChangeTranspiler()">
         <option v-for="t in transpilers" v-bind:value="t" >{{ t.name }}</option>
@@ -30,6 +30,7 @@
 
       <input type="checkbox" v-model="enableClickRun" v-on:change="setLocationHash()">: click_run
       <input type="checkbox" v-model="enablePromiseWait" v-on:change="setLocationHash()">: promise_wait
+      <input type="checkbox" v-model="enableTopLevelAwait" v-on:change="setLocationHash()">: top-level await
 
       <button v-if="enableClickRun" v-on:click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)">
         {{ clickRunButtonText }}
@@ -66,6 +67,7 @@ import * as uaDeviceDetector from 'ua-device-detector';
 import * as monacoEditor from 'monaco-editor'
 const MonacoEditor = () => import('vue-monaco');
 import {loadScriptOnce} from "@/utils";
+const BabelAsync = () => import("@babel/standalone");
 
 // Get Opal object
 const OpalAsync = async () => {
@@ -119,11 +121,6 @@ const LZMAAsync = async () => {
   await loadScriptOnce('copied_js/lzma_worker-min.js');
   return (window as any).LZMA;
 };
-// Get Babel
-const BabelAsync = async () => {
-  await loadScriptOnce("copied_js/babel.min.js");
-  return (window as any).Babel;
-};
 
 type CompressionAlg = {
   name: string,
@@ -168,7 +165,7 @@ type Transpiler = {
   name: string,
   aceEditorMode: string,
   initLibrary: () => Promise<void>,
-  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string) => Promise<{ executableFunction: Function, transpiledJsCode: string }>
+  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string, enableTopLevelAwaitIfPossible: boolean) => Promise<{ executableFunction: Function, transpiledJsCode: string }>
 };
 
 // TODO: Move proper place
@@ -180,7 +177,7 @@ const RubyTranspiler: Transpiler = {
     Opal.load('opal');
     Opal.load('opal-parser');
   },
-  getExecutableFunctionAndTranspiledJsCode: async (rubyScript: string) => {
+  getExecutableFunctionAndTranspiledJsCode: async (rubyScript: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Opal = await OpalAsync();
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
@@ -199,20 +196,55 @@ const RubyTranspiler: Transpiler = {
   }
 };
 
+// Use eval because of Babel
+const AsyncFunction = eval('Object.getPrototypeOf(async function() {}).constructor');
+
 const Es2017Transpiler: Transpiler = {
   name: "ES2017",
   aceEditorMode: "javascript",
   initLibrary: () => Promise.resolve(),
-  getExecutableFunctionAndTranspiledJsCode: async (script) => {
+  getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Babel = await BabelAsync();
-    // Use javascript global variable "INPUT"
-    // (NOTE: `INPUT` will be pure JavaScript string variable)
-    const scriptWithInput = 'var s = window.INPUT;\n' + script;
+    const presets = ["es2017"];
+    // Find last expression statement
+    let lastExpressionStatementPath: any | undefined;
+    const lastFinderPlugin = (b: any) => {
+      return {
+        visitor: {
+          ExpressionStatement(path: any) {
+            if (!path.findParent((p: any) => p.isFunction())) {
+              lastExpressionStatementPath = path;
+            }
+          },
+        },
+      };
+    };
+    // FIXME: find better way not to call transform() twice
+    Babel.transform(script, {
+      presets,
+      plugins: [ lastFinderPlugin ],
+    });
     // Transpile
-    const code = Babel.transform(scriptWithInput, {presets: ["es2017"]}).code;
+    const code = Babel.transform(script, {
+      presets,
+      plugins: [
+        (b: any) => ({
+          visitor: {
+            ExpressionStatement(path: any) {
+              if (path.node.expression.start === lastExpressionStatementPath?.node.expression.start && path.node.expression.end === lastExpressionStatementPath?.node.expression.end) {
+                // Attach "return" to the last statement. (e.g. 10 → return 10;)
+                path.replaceWith(b.types.returnStatement(path.node.expression));
+              }
+            },
+          },
+        })
+      ],
+    }).code!;
+    const executableFunction = enableTopLevelAwaitIfPossible ? new AsyncFunction("nipp", "s", code) : new Function("nipp", "s", code);
     return {
       executableFunction: () => {
-        return eval(code);
+        // (NOTE: `INPUT` will be pure JavaScript string variable)
+        return executableFunction(nippSupport, (window as any).INPUT);
       },
       transpiledJsCode: code
     };
@@ -223,17 +255,18 @@ const FuncEs2017Transpiler: Transpiler = {
   name: "ES2017 with Function",
   aceEditorMode: "javascript",
   initLibrary: () => Promise.resolve(),
-  getExecutableFunctionAndTranspiledJsCode: async (script: string) => {
+  getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Babel = await BabelAsync();
-    // Use javascript global variable "INPUT"
-    // (NOTE: `INPUT` will be pure JavaScript string variable)
-    const scriptWithInput = 'var s = window.INPUT;\n' + script;
     // Transpile
-    const code = Babel.transform(scriptWithInput, {presets: ["es2017"]}).code;
+    const code = Babel.transform(script, {presets: ["es2017"]}).code!;
     // Generate executable function
-    const executableFunction = new Function(code);
+    const executableFunction = new Function("nipp", "s", code);
     return {
-      executableFunction: executableFunction,
+      executableFunction: () => {
+        // Use javascript global variable "INPUT"
+        // (NOTE: `INPUT` will be pure JavaScript string variable)
+        executableFunction(nippSupport, (window as any).INPUT);
+      },
       transpiledJsCode: code
     };
   }
@@ -286,6 +319,24 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
   }
 }
 
+const visitWithoutFragment = window.location.hash === "";
+
+const nippSupport = {
+  loadScript(src: string) {
+    const script = document.querySelector(`script[src="${src}"]`);
+    // If already appended
+    if (script !== null) {
+      return;
+    }
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = resolve;
+      document.head.appendChild(script);
+    });
+  },
+};
+
 @Component({
   components: {
     MonacoEditor
@@ -317,13 +368,15 @@ export default class Nipp extends Vue {
   enableClickRun = false;
   // Use promise-wait or not
   enablePromiseWait = false;
+  // Use top-level await or not
+  enableTopLevelAwait = false;
   transpilers: ReadonlyArray<Transpiler> = [
     RubyTranspiler,
     Es2017Transpiler,
     FuncEs2017Transpiler
   ];
   // Set transpiler
-  transpiler = this.transpilers[0];
+  transpiler = visitWithoutFragment ? Es2017Transpiler : RubyTranspiler;
   // Error string
   errorStr = "";
   // Whether error string is shown or not
@@ -350,7 +403,9 @@ export default class Nipp extends Vue {
     // Set enable-click-run
     this.enableClickRun = titleAndCode.urlOptions.includes("click_run");
     // Set enable-promise-wait
-    this.enablePromiseWait = titleAndCode.urlOptions.includes("promise_wait");
+    this.enablePromiseWait = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("promise_wait");
+    // Set enable-top-level await
+    this.enableTopLevelAwait = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("top_level_await");
     if (titleAndCode.urlOptions.includes("es2017")) {
       this.transpiler = Es2017Transpiler;
     } else if (titleAndCode.urlOptions.includes("func_es2017")) {
@@ -447,6 +502,10 @@ export default class Nipp extends Vue {
     if (this.enablePromiseWait) {
       options.push("promise_wait");
     }
+    // If top-level await is enable
+    if (this.enableTopLevelAwait) {
+      options.push("top_level_await");
+    }
     // Generate options part
     return options.join(",");
   }
@@ -471,7 +530,7 @@ export default class Nipp extends Vue {
   async transpile() {
     try {
       // Transpile script and Set executable function
-      const executableFunctionAndTraspiledJsCode = await this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script);
+      const executableFunctionAndTraspiledJsCode = await this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script, this.enableTopLevelAwait);
       this.executableFunction = executableFunctionAndTraspiledJsCode.executableFunction;
       this.transpiledJsCode = executableFunctionAndTraspiledJsCode.transpiledJsCode;
       this.errorStr = "";
