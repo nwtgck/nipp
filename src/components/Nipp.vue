@@ -383,7 +383,7 @@ export default class Nipp extends Vue {
     // Set enable-click-run
     this.enableClickRun = titleAndCode.urlOptions.includes("click_run");
     // Set enable-promise-wait
-    this.enablePromiseWait = titleAndCode.urlOptions.includes("promise_wait");
+    this.enablePromiseWait = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("promise_wait");
     if (titleAndCode.urlOptions.includes("es2017")) {
       this.transpiler = Es2017Transpiler;
     } else if (titleAndCode.urlOptions.includes("func_es2017")) {
