@@ -30,6 +30,7 @@
 
       <input type="checkbox" v-model="enableClickRun" v-on:change="setLocationHash()">: click_run
       <input type="checkbox" v-model="enablePromiseWait" v-on:change="setLocationHash()">: promise_wait
+      <input type="checkbox" v-model="enableTopLevelAwait" v-on:change="setLocationHash()">: top-level await
 
       <button v-if="enableClickRun" v-on:click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)">
         {{ clickRunButtonText }}
@@ -168,7 +169,7 @@ type Transpiler = {
   name: string,
   aceEditorMode: string,
   initLibrary: () => Promise<void>,
-  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string) => Promise<{ executableFunction: Function, transpiledJsCode: string }>
+  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string, enableTopLevelAwaitIfPossible: boolean) => Promise<{ executableFunction: Function, transpiledJsCode: string }>
 };
 
 // TODO: Move proper place
@@ -180,7 +181,7 @@ const RubyTranspiler: Transpiler = {
     Opal.load('opal');
     Opal.load('opal-parser');
   },
-  getExecutableFunctionAndTranspiledJsCode: async (rubyScript: string) => {
+  getExecutableFunctionAndTranspiledJsCode: async (rubyScript: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Opal = await OpalAsync();
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
@@ -199,11 +200,14 @@ const RubyTranspiler: Transpiler = {
   }
 };
 
+// Use eval because of Babel
+const AsyncFunction = eval('Object.getPrototypeOf(async function() {}).constructor');
+
 const Es2017Transpiler: Transpiler = {
   name: "ES2017",
   aceEditorMode: "javascript",
   initLibrary: () => Promise.resolve(),
-  getExecutableFunctionAndTranspiledJsCode: async (script) => {
+  getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Babel = await BabelAsync();
     const presets = ["es2017"];
     // Find last expression statement
@@ -219,6 +223,7 @@ const Es2017Transpiler: Transpiler = {
         },
       };
     };
+    // FIXME: find better way not to call transform() twice
     Babel.transform(script, {
       presets,
       plugins: [ lastFinderPlugin ],
@@ -239,7 +244,7 @@ const Es2017Transpiler: Transpiler = {
         })
       ],
     }).code;
-    const executableFunction = new Function("s", code);
+    const executableFunction = enableTopLevelAwaitIfPossible ? new AsyncFunction("s", code) : new Function("s", code);
     return {
       executableFunction: () => {
         // (NOTE: `INPUT` will be pure JavaScript string variable)
@@ -254,7 +259,7 @@ const FuncEs2017Transpiler: Transpiler = {
   name: "ES2017 with Function",
   aceEditorMode: "javascript",
   initLibrary: () => Promise.resolve(),
-  getExecutableFunctionAndTranspiledJsCode: async (script: string) => {
+  getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Babel = await BabelAsync();
     // Use javascript global variable "INPUT"
     // (NOTE: `INPUT` will be pure JavaScript string variable)
@@ -350,6 +355,8 @@ export default class Nipp extends Vue {
   enableClickRun = false;
   // Use promise-wait or not
   enablePromiseWait = false;
+  // Use top-level await or not
+  enableTopLevelAwait = false;
   transpilers: ReadonlyArray<Transpiler> = [
     RubyTranspiler,
     Es2017Transpiler,
@@ -384,6 +391,8 @@ export default class Nipp extends Vue {
     this.enableClickRun = titleAndCode.urlOptions.includes("click_run");
     // Set enable-promise-wait
     this.enablePromiseWait = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("promise_wait");
+    // Set enable-top-level await
+    this.enableTopLevelAwait = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("top_level_await");
     if (titleAndCode.urlOptions.includes("es2017")) {
       this.transpiler = Es2017Transpiler;
     } else if (titleAndCode.urlOptions.includes("func_es2017")) {
@@ -480,6 +489,10 @@ export default class Nipp extends Vue {
     if (this.enablePromiseWait) {
       options.push("promise_wait");
     }
+    // If top-level await is enable
+    if (this.enableTopLevelAwait) {
+      options.push("top_level_await");
+    }
     // Generate options part
     return options.join(",");
   }
@@ -504,7 +517,7 @@ export default class Nipp extends Vue {
   async transpile() {
     try {
       // Transpile script and Set executable function
-      const executableFunctionAndTraspiledJsCode = await this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script);
+      const executableFunctionAndTraspiledJsCode = await this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script, this.enableTopLevelAwait);
       this.executableFunction = executableFunctionAndTraspiledJsCode.executableFunction;
       this.transpiledJsCode = executableFunctionAndTraspiledJsCode.transpiledJsCode;
       this.errorStr = "";
