@@ -244,11 +244,11 @@ const Es2017Transpiler: Transpiler = {
         })
       ],
     }).code;
-    const executableFunction = enableTopLevelAwaitIfPossible ? new AsyncFunction("s", code) : new Function("s", code);
+    const executableFunction = enableTopLevelAwaitIfPossible ? new AsyncFunction("nipp", "s", code) : new Function("nipp", "s", code);
     return {
       executableFunction: () => {
         // (NOTE: `INPUT` will be pure JavaScript string variable)
-        return executableFunction((window as any).INPUT);
+        return executableFunction(nippSupport, (window as any).INPUT);
       },
       transpiledJsCode: code
     };
@@ -261,15 +261,16 @@ const FuncEs2017Transpiler: Transpiler = {
   initLibrary: () => Promise.resolve(),
   getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Babel = await BabelAsync();
-    // Use javascript global variable "INPUT"
-    // (NOTE: `INPUT` will be pure JavaScript string variable)
-    const scriptWithInput = 'var s = window.INPUT;\n' + script;
     // Transpile
-    const code = Babel.transform(scriptWithInput, {presets: ["es2017"]}).code;
+    const code = Babel.transform(script, {presets: ["es2017"]}).code;
     // Generate executable function
-    const executableFunction = new Function(code);
+    const executableFunction = new Function("nipp", "s", code);
     return {
-      executableFunction: executableFunction,
+      executableFunction: () => {
+        // Use javascript global variable "INPUT"
+        // (NOTE: `INPUT` will be pure JavaScript string variable)
+        executableFunction(nippSupport, (window as any).INPUT);
+      },
       transpiledJsCode: code
     };
   }
@@ -323,6 +324,22 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
 }
 
 const visitWithoutFragment = window.location.hash === "";
+
+const nippSupport = {
+  loadScript(src: string) {
+    const script = document.querySelector(`script[src="${src}"]`);
+    // If already appended
+    if (script !== null) {
+      return;
+    }
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = resolve;
+      document.head.appendChild(script);
+    });
+  },
+};
 
 @Component({
   components: {
