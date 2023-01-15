@@ -9,7 +9,7 @@
     "build": "npm run copy-scripts && vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "deploy": "npm run build && gh-pages -m '[AUTO] Upload pages' -d dist -a",
-    "copy-babel": "copyfiles --flat node_modules/@babel/standalone/babel.min.js public/copied_js",
+    "copy-babel": "copyfiles --flat node_modules/@babel/standalone/babel.min.{js,js.map} public/copied_js",
     "copy-lzma": "copyfiles --flat node_modules/lzma/src/lzma_worker-min.js public/copied_js",
     "copy-opal": "copyfiles opal-cdn/opal/current/*.min.js public",
     "copy-scripts": "npm run copy-opal && npm run copy-lzma && npm run copy-babel",
