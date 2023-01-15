@@ -67,6 +67,7 @@ import * as uaDeviceDetector from 'ua-device-detector';
 import * as monacoEditor from 'monaco-editor'
 const MonacoEditor = () => import('vue-monaco');
 import {loadScriptOnce} from "@/utils";
+const BabelAsync = () => import("@babel/standalone");
 
 // Get Opal object
 const OpalAsync = async () => {
@@ -119,11 +120,6 @@ const LZMAAsync = async () => {
   // NOTE: LZMA-JS does not support require/import: This PR seem to be a support, but not merged : https://github.com/LZMA-JS/LZMA-JS/pull/60
   await loadScriptOnce('copied_js/lzma_worker-min.js');
   return (window as any).LZMA;
-};
-// Get Babel
-const BabelAsync = async () => {
-  await loadScriptOnce("copied_js/babel.min.js");
-  return (window as any).Babel;
 };
 
 type CompressionAlg = {
@@ -243,7 +239,7 @@ const Es2017Transpiler: Transpiler = {
           },
         })
       ],
-    }).code;
+    }).code!;
     const executableFunction = enableTopLevelAwaitIfPossible ? new AsyncFunction("nipp", "s", code) : new Function("nipp", "s", code);
     return {
       executableFunction: () => {
@@ -262,7 +258,7 @@ const FuncEs2017Transpiler: Transpiler = {
   getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Babel = await BabelAsync();
     // Transpile
-    const code = Babel.transform(script, {presets: ["es2017"]}).code;
+    const code = Babel.transform(script, {presets: ["es2017"]}).code!;
     // Generate executable function
     const executableFunction = new Function("nipp", "s", code);
     return {
