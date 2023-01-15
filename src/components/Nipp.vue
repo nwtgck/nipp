@@ -317,6 +317,8 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
   }
 }
 
+const visitWithoutFragment = window.location.hash === "";
+
 @Component({
   components: {
     MonacoEditor
@@ -354,7 +356,7 @@ export default class Nipp extends Vue {
     FuncEs2017Transpiler
   ];
   // Set transpiler
-  transpiler = this.transpilers[0];
+  transpiler = visitWithoutFragment ? Es2017Transpiler : RubyTranspiler;
   // Error string
   errorStr = "";
   // Whether error string is shown or not
