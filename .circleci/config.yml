@@ -53,12 +53,11 @@ workflows:
           filters:
             branches:
               only: /.*/
-      # Suspend GitHub Pages deploy
-#      - gh_page_deploy:
-#          requires:
-#            - node_10
-#            - node_8
-#          filters:
-#            branches:
-#              only:
-#                - master
+      - gh_page_deploy:
+          requires:
+            - node_10
+            - node_8
+          filters:
+            branches:
+              only:
+                - master
