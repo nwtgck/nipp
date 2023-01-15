@@ -116,12 +116,12 @@ const OpalAsync = async () => {
 // Get LZMA object
 const LZMAAsync = async () => {
   // NOTE: LZMA-JS does not support require/import: This PR seem to be a support, but not merged : https://github.com/LZMA-JS/LZMA-JS/pull/60
-  await loadScriptOnce('node_modules/lzma/src/lzma_worker-min.js');
+  await loadScriptOnce('copied_js/lzma_worker-min.js');
   return (window as any).LZMA;
 };
 // Get Babel
 const BabelAsync = async () => {
-  await loadScriptOnce("node_modules/@babel/standalone/babel.min.js");
+  await loadScriptOnce("copied_js/babel.min.js");
   return (window as any).Babel;
 };
 
