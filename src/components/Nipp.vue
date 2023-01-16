@@ -59,59 +59,14 @@
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
-const pakoAsync = () => import('pako');
 import * as uaDeviceDetector from 'ua-device-detector';
 const NippMonacoEditor = () => import('@/components/NippMonacoEditor.vue');
-import {loadScriptOnce} from "@/utils";
 import {type Transpiler} from "@/transpilers/Transpiler";
 import {RubyTranspiler} from "@/transpilers/RubyTranspiler";
 import {Es2017Transpiler, FuncEs2017Transpiler} from "@/transpilers/Es2017Transpiler";
-
-// Get LZMA object
-const LZMAAsync = async () => {
-  // NOTE: LZMA-JS does not support require/import: This PR seem to be a support, but not merged : https://github.com/LZMA-JS/LZMA-JS/pull/60
-  await loadScriptOnce('copied_js/lzma_worker-min.js');
-  return (window as any).LZMA;
-};
-
-type CompressionAlg = {
-  name: string,
-  compress: (raw: string) => Promise<string>,
-  decompress: (compressed: string) => Promise<string>
-}
-
-const DeflateAlg: CompressionAlg = {
-  name: "Deflate",
-  compress: async (str: string) => {
-    const pako = await pakoAsync();
-    // NOTE: Negative windowBits means no header and no checksum
-    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
-    const binStr = pako.deflate(str, {to: 'string', level: 9, windowBits: -8});
-    return binStr;
-  },
-  decompress: async (binStr: string) => {
-    const pako = await pakoAsync();
-    // NOTE: Negative windowBits means no header and no checksum
-    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
-    return pako.inflate(binStr, {to: 'string', windowBits: -8});
-  }
-};
-
-const LZMAAlg: CompressionAlg = {
-  name: "LZMA",
-  compress: async (str: string) => {
-    const LZMA = await LZMAAsync();
-    const compressed: string = LZMA.compress(str, 9);
-    // (from: https://github.com/alcor/itty-bitty/blob/5292c4b7891939dab89412f9e474bca707c9bec5/data.js#L25)
-    // TODO: Not use any in Uint8Array
-    // TODO: Not use any in apply
-    return String.fromCharCode.apply(null, new Uint8Array(compressed as any) as any);
-  },
-  decompress: async function(binStr) {
-    const LZMA = await LZMAAsync();
-    return LZMA.decompress(binStr.split('').map(function(c){return c.charCodeAt(0)}));
-  }
-};
+import {type CompressionAlg} from "@/compression-algs/CompressionAlg";
+import {DeflateAlg} from "@/compression-algs/DeflateAlg";
+import {LZMAAlg} from "@/compression-algs/LZMAAlg";
 
 // Encode code
 async function encodeCode(code: string, compressor: (raw: string) => Promise<string>): Promise<string> {
@@ -122,7 +77,6 @@ async function encodeCode(code: string, compressor: (raw: string) => Promise<str
     return "";
   }
 }
-
 // Decode code
 async function decodeCode(encodedCode: string, decompressor: (compressed: string) => Promise<string>): Promise<string> {
   try {
