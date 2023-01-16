@@ -13,7 +13,7 @@ const AsyncFunction = eval('Object.getPrototypeOf(async function() {}).construct
 
 const nippSupport = {
   loadScript(src: string) {
-    const script = document.querySelector(`script[src="${src}"]`);
+    const script = document.querySelector(`head > script[src="${src}"]`);
     // If already appended
     if (script !== null) {
       return;
