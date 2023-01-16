@@ -9,13 +9,10 @@
 
     <!--  Resizable: (base: https://stackoverflow.com/questions/47017753/monaco-editor-dynamically-resizable) -->
     <div style="resize: vertical; overflow: auto; height: 20em;">
-      <!--  NOTE: `:language=` is needed to highlight JavaScript -->
       <!--  NOTE: "height: 98%;" allows user to resize easier-->
-      <monaco-editor v-model="script"
-                     v-on:change="onChangeScript()"
-                     :options="monacoOptions"
-                     :language="monacoOptions.language"
-                     style="width: 100%; height: 98%; border: #ccc solid 2px; box-sizing: border-box;" />
+      <NippMonacoEditor v-model="script"
+                        :options="monacoOptions"
+                        style="width: 100%; height: 98%; border: #ccc solid 2px; box-sizing: border-box;"/>
     </div>
     <form onsubmit="return false" class="pure-form pure-form-aligned">
       <label for="transpiler">Transpiler:</label>
@@ -53,7 +50,7 @@
     <span v-if="showTranspiledJsCode">
       <div class="pure-g">
         <div class="pure-u-1">
-          <monaco-editor :value="transpiledJsCode" language="javascript" :options="{ fontSize: 12, minimap: { enabled: false } }" style="min-height: 5rem;"/>
+          <NippMonacoEditor :value="transpiledJsCode" :options="{ language: 'javascript', fontSize: 12, minimap: { enabled: false } }" style="min-height: 5rem;"/>
         </div>
       </div>
     </span>
@@ -62,216 +59,14 @@
 
 <script lang="ts">
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
-const pakoAsync = () => import('pako');
 import * as uaDeviceDetector from 'ua-device-detector';
-import * as monacoEditor from 'monaco-editor'
-const MonacoEditor = () => import('vue-monaco');
-import {loadScriptOnce} from "@/utils";
-const BabelAsync = () => import("@babel/standalone");
-
-// Get Opal object
-const OpalAsync = async () => {
-  await loadScriptOnce("opal-cdn/opal/current/opal.min.js");
-  await loadScriptOnce("opal-cdn/opal/current/opal-parser.min.js");
-  await Promise.all([
-    loadScriptOnce("opal-cdn/opal/current/base64.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/benchmark.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/bigdecimal.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/buffer.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/console.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/date.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/delegate.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/dir.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/encoding.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/enumerator.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/erb.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/file.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/fileutils.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/forwardable.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/headless_chrome.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/iconv.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/js.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/json.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/math.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/nashorn.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/native.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/nodejs.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/observer.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/opal-builder.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/ostruct.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/pathname.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/pp.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/promise.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/rbconfig.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/securerandom.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/set.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/singleton.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/stringio.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/strscan.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/template.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/thread.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/time.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/yaml.min.js"),
-  ]);
-  return (window as any).Opal;
-};
-// Get LZMA object
-const LZMAAsync = async () => {
-  // NOTE: LZMA-JS does not support require/import: This PR seem to be a support, but not merged : https://github.com/LZMA-JS/LZMA-JS/pull/60
-  await loadScriptOnce('copied_js/lzma_worker-min.js');
-  return (window as any).LZMA;
-};
-
-type CompressionAlg = {
-  name: string,
-  compress: (raw: string) => Promise<string>,
-  decompress: (compressed: string) => Promise<string>
-}
-
-const DeflateAlg: CompressionAlg = {
-  name: "Deflate",
-  compress: async (str: string) => {
-    const pako = await pakoAsync();
-    // NOTE: Negative windowBits means no header and no checksum
-    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
-    const binStr = pako.deflate(str, {to: 'string', level: 9, windowBits: -8});
-    return binStr;
-  },
-  decompress: async (binStr: string) => {
-    const pako = await pakoAsync();
-    // NOTE: Negative windowBits means no header and no checksum
-    // (see: https://docs.python.org/3.6/library/zlib.html#zlib.decompress)
-    return pako.inflate(binStr, {to: 'string', windowBits: -8});
-  }
-};
-
-const LZMAAlg: CompressionAlg = {
-  name: "LZMA",
-  compress: async (str: string) => {
-    const LZMA = await LZMAAsync();
-    const compressed: string = LZMA.compress(str, 9);
-    // (from: https://github.com/alcor/itty-bitty/blob/5292c4b7891939dab89412f9e474bca707c9bec5/data.js#L25)
-    // TODO: Not use any in Uint8Array
-    // TODO: Not use any in apply
-    return String.fromCharCode.apply(null, new Uint8Array(compressed as any) as any);
-  },
-  decompress: async function(binStr) {
-    const LZMA = await LZMAAsync();
-    return LZMA.decompress(binStr.split('').map(function(c){return c.charCodeAt(0)}));
-  }
-};
-
-type Transpiler = {
-  name: string,
-  aceEditorMode: string,
-  initLibrary: () => Promise<void>,
-  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string, enableTopLevelAwaitIfPossible: boolean) => Promise<{ executableFunction: Function, transpiledJsCode: string }>
-};
-
-// TODO: Move proper place
-const RubyTranspiler: Transpiler = {
-  name: "Ruby",
-  aceEditorMode: "ruby",
-  initLibrary: async () => {
-    const Opal = await OpalAsync();
-    Opal.load('opal');
-    Opal.load('opal-parser');
-  },
-  getExecutableFunctionAndTranspiledJsCode: async (rubyScript: string, enableTopLevelAwaitIfPossible: boolean) => {
-    const Opal = await OpalAsync();
-    // Use javascript global variable "INPUT"
-    // (NOTE: `INPUT` will be pure JavaScript string variable)
-    const rubyScriptWithInput = 's = `window.INPUT`\n' + rubyScript;
-    // Transpile Ruby to JavaScript
-    const transpiledJsCode =
-      Opal.compile(rubyScriptWithInput)
-    // Remove the first comment from transpiled code
-          .replace(/\/\*.*\*\/\s*/, '');
-    // Set executable function
-    const executableFunction = new Function("return " + transpiledJsCode);
-    return {
-      executableFunction: executableFunction,
-      transpiledJsCode: transpiledJsCode
-    };
-  }
-};
-
-// Use eval because of Babel
-const AsyncFunction = eval('Object.getPrototypeOf(async function() {}).constructor');
-
-const Es2017Transpiler: Transpiler = {
-  name: "ES2017",
-  aceEditorMode: "javascript",
-  initLibrary: () => Promise.resolve(),
-  getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
-    const Babel = await BabelAsync();
-    const presets = ["es2017"];
-    // Find last expression statement
-    let lastExpressionStatementPath: any | undefined;
-    const lastFinderPlugin = (b: any) => {
-      return {
-        visitor: {
-          ExpressionStatement(path: any) {
-            if (!path.findParent((p: any) => p.isFunction())) {
-              lastExpressionStatementPath = path;
-            }
-          },
-        },
-      };
-    };
-    // FIXME: find better way not to call transform() twice
-    Babel.transform(script, {
-      presets,
-      plugins: [ lastFinderPlugin ],
-    });
-    // Transpile
-    const code = Babel.transform(script, {
-      presets,
-      plugins: [
-        (b: any) => ({
-          visitor: {
-            ExpressionStatement(path: any) {
-              if (path.node.expression.start === lastExpressionStatementPath?.node.expression.start && path.node.expression.end === lastExpressionStatementPath?.node.expression.end) {
-                // Attach "return" to the last statement. (e.g. 10 → return 10;)
-                path.replaceWith(b.types.returnStatement(path.node.expression));
-              }
-            },
-          },
-        })
-      ],
-    }).code!;
-    const executableFunction = enableTopLevelAwaitIfPossible ? new AsyncFunction("nipp", "s", code) : new Function("nipp", "s", code);
-    return {
-      executableFunction: () => {
-        // (NOTE: `INPUT` will be pure JavaScript string variable)
-        return executableFunction(nippSupport, (window as any).INPUT);
-      },
-      transpiledJsCode: code
-    };
-  }
-};
-
-const FuncEs2017Transpiler: Transpiler = {
-  name: "ES2017 with Function",
-  aceEditorMode: "javascript",
-  initLibrary: () => Promise.resolve(),
-  getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
-    const Babel = await BabelAsync();
-    // Transpile
-    const code = Babel.transform(script, {presets: ["es2017"]}).code!;
-    // Generate executable function
-    const executableFunction = new Function("nipp", "s", code);
-    return {
-      executableFunction: () => {
-        // Use javascript global variable "INPUT"
-        // (NOTE: `INPUT` will be pure JavaScript string variable)
-        executableFunction(nippSupport, (window as any).INPUT);
-      },
-      transpiledJsCode: code
-    };
-  }
-};
-
+const NippMonacoEditor = () => import('@/components/NippMonacoEditor.vue');
+import {type Transpiler} from "@/transpilers/Transpiler";
+import {RubyTranspiler} from "@/transpilers/RubyTranspiler";
+import {Es2017Transpiler, FuncEs2017Transpiler} from "@/transpilers/Es2017Transpiler";
+import {type CompressionAlg} from "@/compression-algs/CompressionAlg";
+import {DeflateAlg} from "@/compression-algs/DeflateAlg";
+import {LZMAAlg} from "@/compression-algs/LZMAAlg";
 
 // Encode code
 async function encodeCode(code: string, compressor: (raw: string) => Promise<string>): Promise<string> {
@@ -282,7 +77,6 @@ async function encodeCode(code: string, compressor: (raw: string) => Promise<str
     return "";
   }
 }
-
 // Decode code
 async function decodeCode(encodedCode: string, decompressor: (compressed: string) => Promise<string>): Promise<string> {
   try {
@@ -300,7 +94,7 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
   const splited = location.hash.split("/");
   if(splited.length >= 3) {
     // Get title
-    const title = decodeURI(splited[0].substring(1).replace(/_/g, " "));
+    const title = decodeURIComponent(splited[0].substring(1).replace(/_/g, " "));
     // Get URL options
     const urlOptions = splited[1].split(",");
     // Get encoded code
@@ -321,25 +115,11 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
 
 const visitWithoutFragment = window.location.hash === "";
 
-const nippSupport = {
-  loadScript(src: string) {
-    const script = document.querySelector(`script[src="${src}"]`);
-    // If already appended
-    if (script !== null) {
-      return;
-    }
-    return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = src;
-      script.onload = resolve;
-      document.head.appendChild(script);
-    });
-  },
-};
+type IStandaloneEditorConstructionOptions = Parameters<(typeof import("monaco-editor"))["editor"]["create"]>[1];
 
 @Component({
   components: {
-    MonacoEditor
+    NippMonacoEditor,
   }
 })
 export default class Nipp extends Vue {
@@ -458,8 +238,7 @@ export default class Nipp extends Vue {
     await this.transpile();
   }
 
-  // NOTE: { tabSize: number } is valid because: https://github.com/egoist/vue-monaco/blob/1c138c8acd9ab08dbbdcf34c88933bcc736f85da/example/index.js#L43
-  get monacoOptions(): monacoEditor.editor.IEditorConstructionOptions & { language: string } | { tabSize: number } {
+  get monacoOptions(): IStandaloneEditorConstructionOptions {
     const language = this.transpiler === RubyTranspiler ? 'ruby': 'javascript';
     return {
       language: language,
@@ -472,7 +251,7 @@ export default class Nipp extends Vue {
 
   async setLocationHash() {
     // Create title part
-    const titlePart = (this.pageTitle).replace(/ /g, "_");
+    const titlePart = (this.pageTitle).replace(/ /g, "_").replace(/%/g, "%25").replace(/\//g, "%2F");
     // Create options part
     const urlOptionsPart = this.getUrlOptionsPart();
     // Encode code
@@ -564,29 +343,24 @@ export default class Nipp extends Vue {
       // Get output
       const output = this.executableFunction();
       // If promise-wait is enable
-      if(this.enablePromiseWait && output !== undefined) {
-        // Get prototype of the object
-        const proto = Object.getPrototypeOf(output);
-        // If the output object is a Promise
-        if(proto === Promise.prototype) {
-          this.outputText = "<The promise is not complete yet>";
-          output
-            .then((res: any) => {
-              Vue.nextTick(() => {
-                this.outputText = res + "";
-                // Set no error
-                this.errorStr = "";
-                this.hasError = false;
-              });
-            })
-            .catch((err: Error) => {
-              Vue.nextTick(()=>{
-                this.outputText = "<Promise error: " + err.toString() + ">";
-                this.errorStr = err.toString();
-                this.hasError = true;
-              });
+      if(this.enablePromiseWait) {
+        this.outputText = "<The promise is not complete yet>";
+        Promise.resolve(output)
+          .then((res: any) => {
+            Vue.nextTick(() => {
+              this.outputText = res + "";
+              // Set no error
+              this.errorStr = "";
+              this.hasError = false;
             });
-        }
+          })
+          .catch((err: Error) => {
+            Vue.nextTick(()=>{
+              this.outputText = "<Promise error: " + err.toString() + ">";
+              this.errorStr = err.toString();
+              this.hasError = true;
+            });
+          });
       } else {
         // Set output text
         this.outputText = output + "";
