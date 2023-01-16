@@ -140,7 +140,7 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
   const splited = location.hash.split("/");
   if(splited.length >= 3) {
     // Get title
-    const title = decodeURI(splited[0].substring(1).replace(/_/g, " "));
+    const title = decodeURIComponent(splited[0].substring(1).replace(/_/g, " "));
     // Get URL options
     const urlOptions = splited[1].split(",");
     // Get encoded code
@@ -297,7 +297,7 @@ export default class Nipp extends Vue {
 
   async setLocationHash() {
     // Create title part
-    const titlePart = (this.pageTitle).replace(/ /g, "_");
+    const titlePart = (this.pageTitle).replace(/ /g, "_").replace(/%/g, "%25").replace(/\//g, "%2F");
     // Create options part
     const urlOptionsPart = this.getUrlOptionsPart();
     // Encode code
