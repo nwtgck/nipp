@@ -9,13 +9,10 @@
 
     <!--  Resizable: (base: https://stackoverflow.com/questions/47017753/monaco-editor-dynamically-resizable) -->
     <div style="resize: vertical; overflow: auto; height: 20em;">
-      <!--  NOTE: `:language=` is needed to highlight JavaScript -->
       <!--  NOTE: "height: 98%;" allows user to resize easier-->
-      <monaco-editor v-model="script"
-                     v-on:change="onChangeScript()"
-                     :options="monacoOptions"
-                     :language="monacoOptions.language"
-                     style="width: 100%; height: 98%; border: #ccc solid 2px; box-sizing: border-box;" />
+      <NippMonacoEditor v-model="script"
+                        :options="monacoOptions"
+                        style="width: 100%; height: 98%; border: #ccc solid 2px; box-sizing: border-box;"/>
     </div>
     <form onsubmit="return false" class="pure-form pure-form-aligned">
       <label for="transpiler">Transpiler:</label>
@@ -53,7 +50,7 @@
     <span v-if="showTranspiledJsCode">
       <div class="pure-g">
         <div class="pure-u-1">
-          <monaco-editor :value="transpiledJsCode" language="javascript" :options="{ fontSize: 12, minimap: { enabled: false } }" style="min-height: 5rem;"/>
+          <NippMonacoEditor :value="transpiledJsCode" :options="{ language: 'javascript', fontSize: 12, minimap: { enabled: false } }" style="min-height: 5rem;"/>
         </div>
       </div>
     </span>
@@ -64,8 +61,7 @@
 import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
 const pakoAsync = () => import('pako');
 import * as uaDeviceDetector from 'ua-device-detector';
-import * as monacoEditor from 'monaco-editor'
-const MonacoEditor = () => import('vue-monaco');
+const NippMonacoEditor = () => import('@/components/NippMonacoEditor.vue');
 import {loadScriptOnce} from "@/utils";
 import {type Transpiler} from "@/transpilers/Transpiler";
 import {RubyTranspiler} from "@/transpilers/RubyTranspiler";
@@ -165,9 +161,11 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
 
 const visitWithoutFragment = window.location.hash === "";
 
+type IStandaloneEditorConstructionOptions = Parameters<(typeof import("monaco-editor"))["editor"]["create"]>[1];
+
 @Component({
   components: {
-    MonacoEditor
+    NippMonacoEditor,
   }
 })
 export default class Nipp extends Vue {
@@ -286,8 +284,7 @@ export default class Nipp extends Vue {
     await this.transpile();
   }
 
-  // NOTE: { tabSize: number } is valid because: https://github.com/egoist/vue-monaco/blob/1c138c8acd9ab08dbbdcf34c88933bcc736f85da/example/index.js#L43
-  get monacoOptions(): monacoEditor.editor.IEditorConstructionOptions & { language: string } | { tabSize: number } {
+  get monacoOptions(): IStandaloneEditorConstructionOptions {
     const language = this.transpiler === RubyTranspiler ? 'ruby': 'javascript';
     return {
       language: language,
