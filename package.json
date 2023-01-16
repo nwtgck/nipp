@@ -24,7 +24,7 @@
     "ua-device-detector": "^1.1.8",
     "vue": "^2.7.14",
     "vue-class-component": "^7.2.2",
-    "vue-property-decorator": "^8.4.0"
+    "vue-property-decorator": "^9.1.2"
   },
   "devDependencies": {
     "@types/babel__core": "^7.1.20",
