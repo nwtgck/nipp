@@ -17,10 +17,10 @@ jobs:
       - image: circleci/node:10
     <<: *node_steps
 
-  node_8:
-    docker:
-      - image: circleci/node:8
-    <<: *node_steps
+#  node_8:
+#    docker:
+#      - image: circleci/node:8
+#    <<: *node_steps
 
   gh_page_deploy:
     docker:
@@ -49,14 +49,14 @@ workflows:
           filters:
             branches:
               only: /.*/
-      - node_8:
-          filters:
-            branches:
-              only: /.*/
+#      - node_8:
+#          filters:
+#            branches:
+#              only: /.*/
       - gh_page_deploy:
           requires:
             - node_10
-            - node_8
+#            - node_8
           filters:
             branches:
               only:
