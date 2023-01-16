@@ -8,7 +8,6 @@
     "serve": "npm run copy-scripts && vue-cli-service serve",
     "build": "npm run copy-scripts && vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
-    "deploy": "npm run build && gh-pages -m '[AUTO] Upload pages' -d dist -a",
     "copy-lzma": "copyfiles --flat node_modules/lzma/src/lzma_worker-min.js public/copied_js",
     "copy-opal": "copyfiles opal-cdn/opal/current/*.min.js public",
     "copy-scripts": "npm run copy-opal && npm run copy-lzma",
@@ -41,7 +40,6 @@
     "@vue/test-utils": "^1.3.3",
     "chai": "^4.3.7",
     "copyfiles": "^2.2.0",
-    "gh-pages": "^2.2.0",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "typescript": "^4.9.4"
   },
