@@ -68,6 +68,7 @@ import * as monacoEditor from 'monaco-editor'
 const MonacoEditor = () => import('vue-monaco');
 import {loadScriptOnce} from "@/utils";
 const BabelAsync = () => import("@babel/standalone");
+import {type PluginObj, type NodePath, type Node} from "@babel/core";
 
 // Get Opal object
 const OpalAsync = async () => {
@@ -199,6 +200,31 @@ const RubyTranspiler: Transpiler = {
 // Use eval because of Babel
 const AsyncFunction = eval('Object.getPrototypeOf(async function() {}).constructor');
 
+interface ExpressionStatement {
+  type: "ExpressionStatement";
+  expression: Node;
+}
+
+const lastReturnBabelPlugin: (b: any) => PluginObj = (() => {
+  // Find last expression statement
+  let lastExpressionStatementPath: NodePath<ExpressionStatement> | undefined;
+  return (b: any) => ({
+    visitor: {
+      ExpressionStatement(path) {
+        if (!path.findParent((p) => p.isFunction())) {
+          lastExpressionStatementPath = path;
+        }
+      },
+    },
+    post(file) {
+      if (lastExpressionStatementPath !== undefined) {
+        // Attach "return" to the last statement. (e.g. 10 → return 10;)
+        lastExpressionStatementPath.replaceWith(b.types.returnStatement(lastExpressionStatementPath.node.expression));
+      }
+    }
+  } satisfies PluginObj);
+})();
+
 const Es2017Transpiler: Transpiler = {
   name: "ES2017",
   aceEditorMode: "javascript",
@@ -206,39 +232,10 @@ const Es2017Transpiler: Transpiler = {
   getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Babel = await BabelAsync();
     const presets = ["es2017"];
-    // Find last expression statement
-    let lastExpressionStatementPath: any | undefined;
-    const lastFinderPlugin = (b: any) => {
-      return {
-        visitor: {
-          ExpressionStatement(path: any) {
-            if (!path.findParent((p: any) => p.isFunction())) {
-              lastExpressionStatementPath = path;
-            }
-          },
-        },
-      };
-    };
-    // FIXME: find better way not to call transform() twice
-    Babel.transform(script, {
-      presets,
-      plugins: [ lastFinderPlugin ],
-    });
     // Transpile
     const code = Babel.transform(script, {
       presets,
-      plugins: [
-        (b: any) => ({
-          visitor: {
-            ExpressionStatement(path: any) {
-              if (path.node.expression.start === lastExpressionStatementPath?.node.expression.start && path.node.expression.end === lastExpressionStatementPath?.node.expression.end) {
-                // Attach "return" to the last statement. (e.g. 10 → return 10;)
-                path.replaceWith(b.types.returnStatement(path.node.expression));
-              }
-            },
-          },
-        })
-      ],
+      plugins: [ lastReturnBabelPlugin ],
     }).code!;
     const executableFunction = enableTopLevelAwaitIfPossible ? new AsyncFunction("nipp", "s", code) : new Function("nipp", "s", code);
     return {
