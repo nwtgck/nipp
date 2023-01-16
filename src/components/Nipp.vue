@@ -389,29 +389,24 @@ export default class Nipp extends Vue {
       // Get output
       const output = this.executableFunction();
       // If promise-wait is enable
-      if(this.enablePromiseWait && output !== undefined) {
-        // Get prototype of the object
-        const proto = Object.getPrototypeOf(output);
-        // If the output object is a Promise
-        if(proto === Promise.prototype) {
-          this.outputText = "<The promise is not complete yet>";
-          output
-            .then((res: any) => {
-              Vue.nextTick(() => {
-                this.outputText = res + "";
-                // Set no error
-                this.errorStr = "";
-                this.hasError = false;
-              });
-            })
-            .catch((err: Error) => {
-              Vue.nextTick(()=>{
-                this.outputText = "<Promise error: " + err.toString() + ">";
-                this.errorStr = err.toString();
-                this.hasError = true;
-              });
+      if(this.enablePromiseWait) {
+        this.outputText = "<The promise is not complete yet>";
+        Promise.resolve(output)
+          .then((res: any) => {
+            Vue.nextTick(() => {
+              this.outputText = res + "";
+              // Set no error
+              this.errorStr = "";
+              this.hasError = false;
             });
-        }
+          })
+          .catch((err: Error) => {
+            Vue.nextTick(()=>{
+              this.outputText = "<Promise error: " + err.toString() + ">";
+              this.errorStr = err.toString();
+              this.hasError = true;
+            });
+          });
       } else {
         // Set output text
         this.outputText = output + "";
