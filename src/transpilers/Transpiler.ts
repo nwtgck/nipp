@@ -1,6 +1,5 @@
 export type Transpiler = {
-  name: string,
-  aceEditorMode: string,
+  readonly name: string,
   initLibrary: () => Promise<void>,
-  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string, enableTopLevelAwaitIfPossible: boolean) => Promise<{ executableFunction: Function, transpiledJsCode: string }>
+  readonly getExecutableFunctionAndTranspiledJsCode: (rubyScript: string, enableTopLevelAwaitIfPossible: boolean) => Promise<{ executableFunction: Function, transpiledJsCode: string }>
 };

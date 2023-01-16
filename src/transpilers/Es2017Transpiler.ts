@@ -49,7 +49,6 @@ const lastReturnBabelPlugin: (b: any) => PluginObj = (() => {
 
 export const Es2017Transpiler: Transpiler = {
   name: "ES2017",
-  aceEditorMode: "javascript",
   initLibrary: () => Promise.resolve(),
   getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Babel = await BabelAsync();
@@ -72,7 +71,6 @@ export const Es2017Transpiler: Transpiler = {
 
 export const FuncEs2017Transpiler: Transpiler = {
   name: "ES2017 with Function",
-  aceEditorMode: "javascript",
   initLibrary: () => Promise.resolve(),
   getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
     const Babel = await BabelAsync();

@@ -50,7 +50,6 @@ const OpalAsync = async () => {
 
 export const RubyTranspiler: Transpiler = {
   name: "Ruby",
-  aceEditorMode: "ruby",
   initLibrary: async () => {
     const Opal = await OpalAsync();
     Opal.load('opal');
