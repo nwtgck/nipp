@@ -67,55 +67,10 @@ import * as uaDeviceDetector from 'ua-device-detector';
 import * as monacoEditor from 'monaco-editor'
 const MonacoEditor = () => import('vue-monaco');
 import {loadScriptOnce} from "@/utils";
-const BabelAsync = () => import("@babel/standalone");
-import {type PluginObj, type NodePath, type Node} from "@babel/core";
+import {type Transpiler} from "@/transpilers/Transpiler";
+import {RubyTranspiler} from "@/transpilers/RubyTranspiler";
+import {Es2017Transpiler, FuncEs2017Transpiler} from "@/transpilers/Es2017Transpiler";
 
-// Get Opal object
-const OpalAsync = async () => {
-  await loadScriptOnce("opal-cdn/opal/current/opal.min.js");
-  await loadScriptOnce("opal-cdn/opal/current/opal-parser.min.js");
-  await Promise.all([
-    loadScriptOnce("opal-cdn/opal/current/base64.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/benchmark.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/bigdecimal.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/buffer.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/console.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/date.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/delegate.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/dir.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/encoding.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/enumerator.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/erb.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/file.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/fileutils.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/forwardable.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/headless_chrome.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/iconv.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/js.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/json.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/math.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/nashorn.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/native.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/nodejs.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/observer.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/opal-builder.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/ostruct.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/pathname.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/pp.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/promise.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/rbconfig.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/securerandom.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/set.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/singleton.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/stringio.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/strscan.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/template.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/thread.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/time.min.js"),
-    loadScriptOnce("opal-cdn/opal/current/yaml.min.js"),
-  ]);
-  return (window as any).Opal;
-};
 // Get LZMA object
 const LZMAAsync = async () => {
   // NOTE: LZMA-JS does not support require/import: This PR seem to be a support, but not merged : https://github.com/LZMA-JS/LZMA-JS/pull/60
@@ -161,114 +116,6 @@ const LZMAAlg: CompressionAlg = {
     return LZMA.decompress(binStr.split('').map(function(c){return c.charCodeAt(0)}));
   }
 };
-
-type Transpiler = {
-  name: string,
-  aceEditorMode: string,
-  initLibrary: () => Promise<void>,
-  getExecutableFunctionAndTranspiledJsCode: (rubyScript: string, enableTopLevelAwaitIfPossible: boolean) => Promise<{ executableFunction: Function, transpiledJsCode: string }>
-};
-
-// TODO: Move proper place
-const RubyTranspiler: Transpiler = {
-  name: "Ruby",
-  aceEditorMode: "ruby",
-  initLibrary: async () => {
-    const Opal = await OpalAsync();
-    Opal.load('opal');
-    Opal.load('opal-parser');
-  },
-  getExecutableFunctionAndTranspiledJsCode: async (rubyScript: string, enableTopLevelAwaitIfPossible: boolean) => {
-    const Opal = await OpalAsync();
-    // Use javascript global variable "INPUT"
-    // (NOTE: `INPUT` will be pure JavaScript string variable)
-    const rubyScriptWithInput = 's = `window.INPUT`\n' + rubyScript;
-    // Transpile Ruby to JavaScript
-    const transpiledJsCode =
-      Opal.compile(rubyScriptWithInput)
-    // Remove the first comment from transpiled code
-          .replace(/\/\*.*\*\/\s*/, '');
-    // Set executable function
-    const executableFunction = new Function("return " + transpiledJsCode);
-    return {
-      executableFunction: executableFunction,
-      transpiledJsCode: transpiledJsCode
-    };
-  }
-};
-
-// Use eval because of Babel
-const AsyncFunction = eval('Object.getPrototypeOf(async function() {}).constructor');
-
-interface ExpressionStatement {
-  type: "ExpressionStatement";
-  expression: Node;
-}
-
-const lastReturnBabelPlugin: (b: any) => PluginObj = (() => {
-  // Find last expression statement
-  let lastExpressionStatementPath: NodePath<ExpressionStatement> | undefined;
-  return (b: any) => ({
-    visitor: {
-      ExpressionStatement(path) {
-        if (!path.findParent((p) => p.isFunction())) {
-          lastExpressionStatementPath = path;
-        }
-      },
-    },
-    post(file) {
-      if (lastExpressionStatementPath !== undefined) {
-        // Attach "return" to the last statement. (e.g. 10 → return 10;)
-        lastExpressionStatementPath.replaceWith(b.types.returnStatement(lastExpressionStatementPath.node.expression));
-      }
-    }
-  } satisfies PluginObj);
-})();
-
-const Es2017Transpiler: Transpiler = {
-  name: "ES2017",
-  aceEditorMode: "javascript",
-  initLibrary: () => Promise.resolve(),
-  getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
-    const Babel = await BabelAsync();
-    const presets = ["es2017"];
-    // Transpile
-    const code = Babel.transform(script, {
-      presets,
-      plugins: [ lastReturnBabelPlugin ],
-    }).code!;
-    const executableFunction = enableTopLevelAwaitIfPossible ? new AsyncFunction("nipp", "s", code) : new Function("nipp", "s", code);
-    return {
-      executableFunction: () => {
-        // (NOTE: `INPUT` will be pure JavaScript string variable)
-        return executableFunction(nippSupport, (window as any).INPUT);
-      },
-      transpiledJsCode: code
-    };
-  }
-};
-
-const FuncEs2017Transpiler: Transpiler = {
-  name: "ES2017 with Function",
-  aceEditorMode: "javascript",
-  initLibrary: () => Promise.resolve(),
-  getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
-    const Babel = await BabelAsync();
-    // Transpile
-    const code = Babel.transform(script, {presets: ["es2017"]}).code!;
-    // Generate executable function
-    const executableFunction = new Function("nipp", "s", code);
-    return {
-      executableFunction: () => {
-        // Use javascript global variable "INPUT"
-        // (NOTE: `INPUT` will be pure JavaScript string variable)
-        executableFunction(nippSupport, (window as any).INPUT);
-      },
-      transpiledJsCode: code
-    };
-  }
-};
-
 
 // Encode code
 async function encodeCode(code: string, compressor: (raw: string) => Promise<string>): Promise<string> {
@@ -317,22 +164,6 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
 }
 
 const visitWithoutFragment = window.location.hash === "";
-
-const nippSupport = {
-  loadScript(src: string) {
-    const script = document.querySelector(`script[src="${src}"]`);
-    // If already appended
-    if (script !== null) {
-      return;
-    }
-    return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = src;
-      script.onload = resolve;
-      document.head.appendChild(script);
-    });
-  },
-};
 
 @Component({
   components: {
