@@ -69,22 +69,8 @@ export const Es2017Transpiler: Transpiler = {
   }
 };
 
+// NOTE: Why FuncEs2017Transpiler is the same as Es2017Transpiler? Previously Es2017Transpiler uses eval() but now it uses new Function().
 export const FuncEs2017Transpiler: Transpiler = {
+  ...Es2017Transpiler,
   name: "ES2017 with Function",
-  initLibrary: () => Promise.resolve(),
-  getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
-    const Babel = await BabelAsync();
-    // Transpile
-    const code = Babel.transform(script, {presets: ["es2017"]}).code!;
-    // Generate executable function
-    const executableFunction = new Function("nipp", "s", code);
-    return {
-      executableFunction: () => {
-        // Use javascript global variable "INPUT"
-        // (NOTE: `INPUT` will be pure JavaScript string variable)
-        executableFunction(nippSupport, (window as any).INPUT);
-      },
-      transpiledJsCode: code
-    };
-  }
 };
