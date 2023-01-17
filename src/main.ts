@@ -8,4 +8,13 @@ Vue.config.productionTip = false;
 new Vue({
   render: h => h(App),
   components: { Purecss }
-}).$mount('#app')
+}).$mount('#app');
+
+(() => {
+  const canonicalLink = document.createElement('link');
+  canonicalLink.rel = "canonical";
+  const url = new URL("https://nipp.nwtgck.org");
+  url.hash = location.hash;
+  canonicalLink.href = url.toString();
+  document.head.appendChild(canonicalLink);
+})();
