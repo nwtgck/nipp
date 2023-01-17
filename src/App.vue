@@ -4,16 +4,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+<script setup lang="ts">
 import Nipp from './components/Nipp.vue';
-
-@Component({
-  components: {
-    Nipp,
-  },
-})
-export default class App extends Vue {}
 </script>
 
 <style>

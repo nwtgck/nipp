@@ -57,8 +57,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
+<script setup lang="ts">
+import {computed, nextTick, onMounted, ref, watch} from 'vue';
 import * as uaDeviceDetector from 'ua-device-detector';
 const NippMonacoEditor = () => import('@/components/NippMonacoEditor.vue');
 import {type Transpiler} from "@/transpilers/Transpiler";
@@ -117,272 +117,261 @@ const visitWithoutFragment = window.location.hash === "";
 
 type IStandaloneEditorConstructionOptions = Parameters<(typeof import("monaco-editor"))["editor"]["create"]>[1];
 
-@Component({
-  components: {
-    NippMonacoEditor,
-  }
-})
-export default class Nipp extends Vue {
-  compressionAlgs: ReadonlyArray<CompressionAlg> = [
-    DeflateAlg,
-    LZMAAlg
-  ];
-  // Compression algorithm
-  compressionAlg: CompressionAlg = this.compressionAlgs[0];
-  // Page title
-  pageTitle = "";
-  // Set empty string as default input
-  inputText  = "";
-  // Set empty string as default output
-  outputText = "";
-  // Script
-  script = "";
-  // Generated JavaScript code
-  transpiledJsCode = "";
-  // Whether transpiled JS code is shown or not
-  showTranspiledJsCode = false;
-  // Executable function which return result
-  executableFunction: Function = () => {return "";};
-  // Enable click-run or not
-  // (click-run: Non-realtime/non-reactive evaluation)
-  enableClickRun = false;
-  // Use promise-wait or not
-  enablePromiseWait = false;
-  // Use top-level await or not
-  enableTopLevelAwait = false;
-  transpilers: ReadonlyArray<Transpiler> = [
-    RubyTranspiler,
-    Es2017Transpiler,
-    FuncEs2017Transpiler
-  ];
-  // Set transpiler
-  transpiler = visitWithoutFragment ? Es2017Transpiler : RubyTranspiler;
-  // Error string
-  errorStr = "";
-  // Whether error string is shown or not
-  showError = true;
-  // Whether has error or not
-  hasError = false;
-  // Text of click-run button
-  clickRunButtonText = "";
-  // Use textarea instead of ace
-  useTextarea = false;
+const compressionAlgs = ref<readonly CompressionAlg[]>([
+  DeflateAlg,
+  LZMAAlg
+]);
+// Compression algorithm
+const compressionAlg = ref<CompressionAlg>(compressionAlgs.value[0]);
+// Page title
+const pageTitle = ref("");
+// Set empty string as default input
+const inputText  = ref("");
+// Set empty string as default output
+const outputText = ref("");
+// Script
+const script = ref("");
+// Generated JavaScript code
+const transpiledJsCode = ref("");
+// Whether transpiled JS code is shown or not
+const showTranspiledJsCode = ref(false);
+// Executable function which return result
+const executableFunction = ref<Function>(() => {return "";});
+// Enable click-run or not
+// (click-run: Non-realtime/non-reactive evaluation)
+const enableClickRun = ref(false);
+// Use promise-wait or not
+const enablePromiseWait = ref(false);
+// Use top-level await or not
+const enableTopLevelAwait = ref(false);
+const transpilers = ref<readonly Transpiler[]>([
+  RubyTranspiler,
+  Es2017Transpiler,
+  FuncEs2017Transpiler
+]);
+// Set transpiler
+const transpiler = ref(visitWithoutFragment ? Es2017Transpiler : RubyTranspiler);
+// Error string
+const errorStr = ref("");
+// Whether error string is shown or not
+const showError = ref(true);
+// Whether has error or not
+const hasError = ref(false);
+// Text of click-run button
+const clickRunButtonText = ref("");
+// Use textarea instead of ace
+const useTextarea = ref(false);
 
-  async mounted () {
-    // Get page title and code
-    const titleAndCode = parseLocationHash();
-    if (titleAndCode.urlOptions.includes("lzma")) {
-      this.compressionAlg = LZMAAlg;
+onMounted(async () => {
+  // Get page title and code
+  const titleAndCode = parseLocationHash();
+  if (titleAndCode.urlOptions.includes("lzma")) {
+    compressionAlg.value = LZMAAlg;
+  }
+  // Set page title
+  pageTitle.value = titleAndCode.pageTitle;
+  // Set <title>
+  if (titleAndCode.pageTitle !== "") {
+    document.title   = titleAndCode.pageTitle;
+  }
+  // Set decoded location.hash as default script
+  script.value = await decodeCode(titleAndCode.encodedCode, compressionAlg.value.decompress);
+  // Set enable-click-run
+  enableClickRun.value = titleAndCode.urlOptions.includes("click_run");
+  // Set enable-promise-wait
+  enablePromiseWait.value = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("promise_wait");
+  // Set enable-top-level await
+  enableTopLevelAwait.value = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("top_level_await");
+  if (titleAndCode.urlOptions.includes("es2017")) {
+    transpiler.value = Es2017Transpiler;
+  } else if (titleAndCode.urlOptions.includes("func_es2017")) {
+    transpiler.value = FuncEs2017Transpiler;
+  }
+  // Initialize library
+  transpiler.value.initLibrary();
+  // Set default value to global variable "INPUT"
+  // TODO: duplicate code
+  (window as any).INPUT = inputText.value;
+  // Get device info
+  const deviceInfo = uaDeviceDetector.parseUserAgent(window.navigator.userAgent);
+  // Set click-run button text
+  clickRunButtonText.value = "Run" + (deviceInfo.isDesktop() ? (deviceInfo.os === "mac"? "(⌘+Enter)" : "(Ctrl+Enter)") : "");
+  // If enable click_run is disable
+  if (!enableClickRun.value) {
+    // Set default output
+    setOutputText();
+  }
+
+  window.addEventListener('keydown', (e: WindowEventMap['keydown']) => {
+    if((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      nextTick(()=>{
+        // Run onclick click-run
+        onClickClickRun();
+      })
     }
-    // Set page title
-    this.pageTitle = titleAndCode.pageTitle;
-    // Set <title>
-    if (titleAndCode.pageTitle !== "") {
-      document.title   = titleAndCode.pageTitle;
-    }
-    // Set decoded location.hash as default script
-    this.script = await decodeCode(titleAndCode.encodedCode, this.compressionAlg.decompress);
-    // Set enable-click-run
-    this.enableClickRun = titleAndCode.urlOptions.includes("click_run");
-    // Set enable-promise-wait
-    this.enablePromiseWait = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("promise_wait");
-    // Set enable-top-level await
-    this.enableTopLevelAwait = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("top_level_await");
-    if (titleAndCode.urlOptions.includes("es2017")) {
-      this.transpiler = Es2017Transpiler;
-    } else if (titleAndCode.urlOptions.includes("func_es2017")) {
-      this.transpiler = FuncEs2017Transpiler;
-    }
-    // Initialize library
-    this.transpiler.initLibrary();
-    // Set default value to global variable "INPUT"
-    // TODO: duplicate code
-    (window as any).INPUT = this.inputText;
-    // Get device info
-    const deviceInfo = uaDeviceDetector.parseUserAgent(window.navigator.userAgent);
-    // Set click-run button text
-    this.clickRunButtonText = "Run" + (deviceInfo.isDesktop() ? (deviceInfo.os === "mac"? "(⌘+Enter)" : "(Ctrl+Enter)") : "");
-    // If enable click_run is disable
-    if (!this.enableClickRun) {
-      // Set default output
-      this.setOutputText();
-    }
+  });
+});
 
-    window.addEventListener('keydown', (e: WindowEventMap['keydown']) => {
-      if((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        Vue.nextTick(()=>{
-          // Run onclick click-run
-          this.onClickClickRun();
-        })
-      }
-    });
+watch(pageTitle, async () => {
+  // Set page title
+  document.title = pageTitle.value;
+  // Set location.hash
+  await setLocationHash();
+});
+
+watch(compressionAlg, async () => {
+  // Update location.hash
+  await setLocationHash();
+});
+
+watch(script, async () => {
+  // Set location.hash
+  await setLocationHash();
+  // Transpile
+  await transpile();
+});
+
+const monacoOptions = computed<IStandaloneEditorConstructionOptions>(() => {
+  const language = transpiler.value === RubyTranspiler ? 'ruby': 'javascript';
+  return {
+    language: language,
+    minimap: { enabled: false },
+    fontSize: 15,
+    tabSize: 2,
+    automaticLayout: true
+  };
+});
+
+async function setLocationHash() {
+  // Create title part
+  const titlePart = (pageTitle.value).replace(/%/g, "%25").replace(/_/g, "%5F").replace(/ /g, "_").replace(/\//g, "%2F");
+  // Create options part
+  const urlOptionsPart = getUrlOptionsPart();
+  // Encode code
+  const encodedCode = await encodeCode(script.value, compressionAlg.value.compress);
+  // Change location hash to the code
+  location.hash = titlePart+"/"+urlOptionsPart+"/"+encodedCode;
+}
+
+// Generate options part
+function getUrlOptionsPart(): string {
+  const options: string[] = [];
+  // (NOTE: transpiler:ruby is default so it should be pushed)
+  if (transpiler.value === Es2017Transpiler) {
+    options.push("es2017");
+  } else if (transpiler.value === FuncEs2017Transpiler) {
+    options.push("func_es2017");
   }
-
-  @Watch("pageTitle")
-  async onChangePageTitle(): Promise<void> {
-    // Set page title
-    document.title = this.pageTitle;
-    // Set location.hash
-    await this.setLocationHash();
+  // (NOTE: compression:deflate is default so it should be pushed)
+  if (compressionAlg.value === LZMAAlg) {
+    options.push("lzma");
   }
-
-  @Watch('compressionAlg')
-  async onChangeCompressionAlg() {
-    // Update location.hash
-    await this.setLocationHash();
+  // If click_run is enable
+  if (enableClickRun.value) {
+    options.push("click_run");
   }
-
-  @Watch("script")
-  async onChangeScript(): Promise<void> {
-    // Set location.hash
-    await this.setLocationHash();
-    // Transpile
-    await this.transpile();
+  // If promise_wait is enable
+  if (enablePromiseWait.value) {
+    options.push("promise_wait");
   }
-
-  get monacoOptions(): IStandaloneEditorConstructionOptions {
-    const language = this.transpiler === RubyTranspiler ? 'ruby': 'javascript';
-    return {
-      language: language,
-      minimap: { enabled: false },
-      fontSize: 15,
-      tabSize: 2,
-      automaticLayout: true
-    };
+  // If top-level await is enable
+  if (enableTopLevelAwait.value) {
+    options.push("top_level_await");
   }
-
-  async setLocationHash() {
-    // Create title part
-    const titlePart = (this.pageTitle).replace(/%/g, "%25").replace(/_/g, "%5F").replace(/ /g, "_").replace(/\//g, "%2F");
-    // Create options part
-    const urlOptionsPart = this.getUrlOptionsPart();
-    // Encode code
-    const encodedCode = await encodeCode(this.script, this.compressionAlg.compress);
-    // Change location hash to the code
-    location.hash = titlePart+"/"+urlOptionsPart+"/"+encodedCode;
-  }
-
   // Generate options part
-  getUrlOptionsPart(): string {
-    const options: string[] = [];
-    // (NOTE: transpiler:ruby is default so it should be pushed)
-    if (this.transpiler === Es2017Transpiler) {
-      options.push("es2017");
-    } else if (this.transpiler === FuncEs2017Transpiler) {
-      options.push("func_es2017");
-    }
-    // (NOTE: compression:deflate is default so it should be pushed)
-    if (this.compressionAlg === LZMAAlg) {
-      options.push("lzma");
-    }
-    // If click_run is enable
-    if (this.enableClickRun) {
-      options.push("click_run");
-    }
-    // If promise_wait is enable
-    if (this.enablePromiseWait) {
-      options.push("promise_wait");
-    }
-    // If top-level await is enable
-    if (this.enableTopLevelAwait) {
-      options.push("top_level_await");
-    }
-    // Generate options part
-    return options.join(",");
-  }
+  return options.join(",");
+}
 
-  // (NOTE: this is not typo. onclick "click_run")
-  onClickClickRun() {
-    // Set output text
-    this.setOutputText();
-  }
-
-  async onChangeTranspiler() {
-    // Initialize library
-    this.transpiler.initLibrary();
-    // Ensure to call once
-    this.transpiler.initLibrary = () => Promise.resolve();
-    // Update location.hash
-    await this.setLocationHash();
-    // Transpile
-    await this.transpile();
-  }
-
-  async transpile() {
-    try {
-      // Transpile script and Set executable function
-      const executableFunctionAndTraspiledJsCode = await this.transpiler.getExecutableFunctionAndTranspiledJsCode(this.script, this.enableTopLevelAwait);
-      this.executableFunction = executableFunctionAndTraspiledJsCode.executableFunction;
-      this.transpiledJsCode = executableFunctionAndTraspiledJsCode.transpiledJsCode;
-      this.errorStr = "";
-      this.hasError = false;
-      // If enable click_run is disable
-      if (!this.enableClickRun) {
-        // Set output text
-        this.setOutputText();
-      }
-    } catch (err: any) {
-      // console.log("Transpile compile", err);
-      this.errorStr = err.toString();
-      this.hasError = true;
-    }
-  }
-
-  @Watch("inputText")
-  onChangeInputText() {
-    // If enable click_run is disable
-    if (!this.enableClickRun) {
-      // Set output text
-      this.setOutputText();
-    }
-  }
-
+// (NOTE: this is not typo. onclick "click_run")
+function onClickClickRun() {
   // Set output text
-  setOutputText(){
-    // Set global INPUT string variable
-    (window as any).INPUT = this.inputText;
-    try {
-      // Get output
-      const output = this.executableFunction();
-      // If promise-wait is enable
-      if(this.enablePromiseWait) {
-        this.outputText = "<The promise is not complete yet>";
-        Promise.resolve(output)
-          .then((res: any) => {
-            Vue.nextTick(() => {
-              this.outputText = res + "";
-              // Set no error
-              this.errorStr = "";
-              this.hasError = false;
-            });
-          })
-          .catch((err: Error) => {
-            Vue.nextTick(()=>{
-              this.outputText = "<Promise error: " + err.toString() + ">";
-              this.errorStr = err.toString();
-              this.hasError = true;
-            });
-          });
-      } else {
-        // Set output text
-        this.outputText = output + "";
-        // Set no error
-        this.errorStr = "";
-        this.hasError = false;
-      }
-    } catch (err: any) {
-      // console.log("JS Runtime error", err);
-      this.outputText = "";
-      this.errorStr = err.toString();
-      this.hasError = true;
-    }
-  }
+  setOutputText();
+}
 
-  shareOnTwitter() {
-    // (from: http://d.hatena.ne.jp/osyo-manga/20140717/1405626111)
-    const url = 'https://twitter.com/share?text='+encodeURIComponent(this.pageTitle)+"&url=" + encodeURIComponent(location.href)+"&hashtags=nipp";
-    window.open(url,'','scrollbars=yes,width=500,height=300,');
+async function onChangeTranspiler() {
+  // Initialize library
+  transpiler.value.initLibrary();
+  // Ensure to call once
+  transpiler.value.initLibrary = () => Promise.resolve();
+  // Update location.hash
+  await setLocationHash();
+  // Transpile
+  await transpile();
+}
+
+async function transpile() {
+  try {
+    // Transpile script and Set executable function
+    const executableFunctionAndTraspiledJsCode = await transpiler.value.getExecutableFunctionAndTranspiledJsCode(script.value, enableTopLevelAwait.value);
+    executableFunction.value = executableFunctionAndTraspiledJsCode.executableFunction;
+    transpiledJsCode.value = executableFunctionAndTraspiledJsCode.transpiledJsCode;
+    errorStr.value = "";
+    hasError.value = false;
+    // If enable click_run is disable
+    if (!enableClickRun.value) {
+      // Set output text
+      setOutputText();
+    }
+  } catch (err: any) {
+    // console.log("Transpile compile", err);
+    errorStr.value = err.toString();
+    hasError.value = true;
   }
+}
+
+watch(inputText, () => {
+  // If enable click_run is disable
+  if (!enableClickRun.value) {
+    // Set output text
+    setOutputText();
+  }
+});
+
+// Set output text
+function setOutputText() {
+  // Set global INPUT string variable
+  (window as any).INPUT = inputText.value;
+  try {
+    // Get output
+    const output = executableFunction.value();
+    // If promise-wait is enable
+    if(enablePromiseWait.value) {
+      outputText.value = "<The promise is not complete yet>";
+      Promise.resolve(output)
+        .then((res: any) => {
+          nextTick(() => {
+            outputText.value = res + "";
+            // Set no error
+            errorStr.value = "";
+            hasError.value = false;
+          });
+        })
+        .catch((err: Error) => {
+          nextTick(()=>{
+            outputText.value = "<Promise error: " + err.toString() + ">";
+            errorStr.value = err.toString();
+            hasError.value = true;
+          });
+        });
+    } else {
+      // Set output text
+      outputText.value = output + "";
+      // Set no error
+      errorStr.value = "";
+      hasError.value = false;
+    }
+  } catch (err: any) {
+    // console.log("JS Runtime error", err);
+    outputText.value = "";
+    errorStr.value = err.toString();
+    hasError.value = true;
+  }
+}
+
+function shareOnTwitter() {
+  // (from: http://d.hatena.ne.jp/osyo-manga/20140717/1405626111)
+  const url = 'https://twitter.com/share?text='+encodeURIComponent(pageTitle.value)+"&url=" + encodeURIComponent(location.href)+"&hashtags=nipp";
+  window.open(url,'','scrollbars=yes,width=500,height=300,');
 }
 </script>
 
