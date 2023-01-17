@@ -251,7 +251,7 @@ export default class Nipp extends Vue {
 
   async setLocationHash() {
     // Create title part
-    const titlePart = (this.pageTitle).replace(/ /g, "_").replace(/%/g, "%25").replace(/\//g, "%2F");
+    const titlePart = (this.pageTitle).replace(/%/g, "%25").replace(/_/g, "%5F").replace(/ /g, "_").replace(/\//g, "%2F");
     // Create options part
     const urlOptionsPart = this.getUrlOptionsPart();
     // Encode code
