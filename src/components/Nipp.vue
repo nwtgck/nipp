@@ -177,7 +177,9 @@ export default class Nipp extends Vue {
     // Set page title
     this.pageTitle = titleAndCode.pageTitle;
     // Set <title>
-    document.title   = titleAndCode.pageTitle;
+    if (titleAndCode.pageTitle !== "") {
+      document.title   = titleAndCode.pageTitle;
+    }
     // Set decoded location.hash as default script
     this.script = await decodeCode(titleAndCode.encodedCode, this.compressionAlg.decompress);
     // Set enable-click-run

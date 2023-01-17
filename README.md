@@ -4,7 +4,7 @@
 [![main](https://github.com/nwtgck/nipp/workflows/main/badge.svg)](https://github.com/nwtgck/nipp/actions?query=workflow%3Amain) [![CircleCI](https://circleci.com/gh/nwtgck/nipp.svg?style=shield)](https://circleci.com/gh/nwtgck/nipp)  
 <a href="https://nipp.nwtgck.org"><img src="https://user-images.githubusercontent.com/9122190/28998409-c5bf7362-7a00-11e7-9b63-db56694522e7.png" alt="Launch now as Web App" height="48"></a>
 
-Mini Application Hosted on URL <https://nipp.nwtgck.org>  
+Programmable portable App hosted on URL <https://nipp.nwtgck.org>  
 Nipp is inspired by [itty.bitty](https://github.com/alcor/itty-bitty).
 
 ![Nipp Word Count](doc_assets/nipp_word_count.gif)
