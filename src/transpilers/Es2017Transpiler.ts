@@ -48,6 +48,7 @@ const lastReturnBabelPlugin: (b: any) => PluginObj = (() => {
 })();
 
 export const Es2017Transpiler: Transpiler = {
+  id: Symbol(),
   name: "ES2017",
   initLibrary: () => Promise.resolve(),
   getExecutableFunctionAndTranspiledJsCode: async (script: string, enableTopLevelAwaitIfPossible: boolean) => {
@@ -72,5 +73,6 @@ export const Es2017Transpiler: Transpiler = {
 // NOTE: Why FuncEs2017Transpiler is the same as Es2017Transpiler? Previously Es2017Transpiler uses eval() but now it uses new Function().
 export const FuncEs2017Transpiler: Transpiler = {
   ...Es2017Transpiler,
+  id: Symbol(),
   name: "ES2017 with Function",
 };
