@@ -188,6 +188,11 @@ onMounted(async () => {
   enablePromiseWait.value = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("promise_wait");
   // Set enable-top-level await
   enableTopLevelAwait.value = visitWithoutFragment ? true : titleAndCode.urlOptions.includes("top_level_await");
+  // "async" option enables both
+  if (titleAndCode.urlOptions.includes("async")) {
+    enablePromiseWait.value = true;
+    enableTopLevelAwait.value = true;
+  }
   if (titleAndCode.urlOptions.includes("es2017")) {
     transpiler.value = Es2017Transpiler;
   } else if (titleAndCode.urlOptions.includes("func_es2017")) {
@@ -260,13 +265,17 @@ const urlOptionsPart = computed<string>(() => {
   if (enableClickRun.value) {
     options.push("click_run");
   }
-  // If promise_wait is enable
-  if (enablePromiseWait.value) {
-    options.push("promise_wait");
-  }
-  // If top-level await is enable
-  if (enableTopLevelAwait.value) {
-    options.push("top_level_await");
+  if (enablePromiseWait.value && enableTopLevelAwait.value) {
+    options.push("async");
+  } else {
+    // If promise_wait is enable
+    if (enablePromiseWait.value) {
+      options.push("promise_wait");
+    }
+    // If top-level await is enable
+    if (enableTopLevelAwait.value) {
+      options.push("top_level_await");
+    }
   }
   // Generate options part
   return options.join(",");
