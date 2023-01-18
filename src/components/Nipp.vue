@@ -25,9 +25,9 @@
         <option v-for="a in compressionAlgs" v-bind:value="a" >{{ a.name }}</option>
       </select>
 
-      <input type="checkbox" v-model="enableClickRun" v-on:change="setLocationHash()">: click_run
-      <input type="checkbox" v-model="enablePromiseWait" v-on:change="setLocationHash()">: promise_wait
-      <input type="checkbox" v-model="enableTopLevelAwait" v-on:change="setLocationHash()">: top-level await
+      <input type="checkbox" v-model="enableClickRun">: click_run
+      <input type="checkbox" v-model="enablePromiseWait">: promise_wait
+      <input type="checkbox" v-model="enableTopLevelAwait">: top-level await
 
       <button v-if="enableClickRun" v-on:click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)">
         {{ clickRunButtonText }}
@@ -59,6 +59,7 @@
 
 <script setup lang="ts">
 import {computed, nextTick, onMounted, ref, watch, defineAsyncComponent} from 'vue';
+import { computedAsync } from '@vueuse/core';
 import * as uaDeviceDetector from 'ua-device-detector';
 const NippMonacoEditor = defineAsyncComponent(() => import('@/components/NippMonacoEditor.vue'));
 import {type Transpiler} from "@/transpilers/Transpiler";
@@ -161,6 +162,11 @@ const hasError = ref(false);
 const clickRunButtonText = ref("");
 // Use textarea instead of ace
 const useTextarea = ref(false);
+const scriptModified = ref(false);
+
+watch(script, () => {
+  scriptModified.value = true;
+});
 
 onMounted(async () => {
   // Get page title and code
@@ -215,18 +221,9 @@ onMounted(async () => {
 watch(pageTitle, async () => {
   // Set page title
   document.title = pageTitle.value;
-  // Set location.hash
-  await setLocationHash();
-});
-
-watch(compressionAlg, async () => {
-  // Update location.hash
-  await setLocationHash();
 });
 
 watch(script, async () => {
-  // Set location.hash
-  await setLocationHash();
   // Transpile
   await transpile();
 });
@@ -242,19 +239,12 @@ const monacoOptions = computed<IStandaloneEditorConstructionOptions>(() => {
   };
 });
 
-async function setLocationHash() {
-  // Create title part
-  const titlePart = (pageTitle.value).replace(/%/g, "%25").replace(/_/g, "%5F").replace(/ /g, "_").replace(/\//g, "%2F");
-  // Create options part
-  const urlOptionsPart = getUrlOptionsPart();
-  // Encode code
-  const encodedCode = await encodeCode(script.value, compressionAlg.value.compress);
-  // Change location hash to the code
-  location.hash = titlePart+"/"+urlOptionsPart+"/"+encodedCode;
-}
+const urlTitlePart = computed<string>(() => {
+  return pageTitle.value.replace(/%/g, "%25").replace(/_/g, "%5F").replace(/ /g, "_").replace(/\//g, "%2F");
+});
 
 // Generate options part
-function getUrlOptionsPart(): string {
+const urlOptionsPart = computed<string>(() => {
   const options: string[] = [];
   // (NOTE: transpiler:ruby is default so it should be pushed)
   if (transpiler.value.id === Es2017Transpiler.id) {
@@ -280,7 +270,30 @@ function getUrlOptionsPart(): string {
   }
   // Generate options part
   return options.join(",");
-}
+});
+
+const urlEncodedCodePart = computedAsync<string | undefined>(async () => {
+  return await encodeCode(script.value, compressionAlg.value.compress);
+});
+
+const locationHash = computed<string | undefined>(() => {
+  if (urlEncodedCodePart.value === undefined) {
+    return undefined;
+  }
+  return urlTitlePart.value + "/" + urlOptionsPart.value + "/" + urlEncodedCodePart.value;
+});
+
+watch(locationHash, () => {
+  if (locationHash.value === undefined) {
+    return;
+  }
+  // Not change location.hash when user visited and not input script yet
+  if (!scriptModified.value) {
+    return;
+  }
+  // Change location hash to the code
+  location.hash = locationHash.value;
+});
 
 // (NOTE: this is not typo. onclick "click_run")
 function onClickClickRun() {
@@ -293,8 +306,6 @@ async function onChangeTranspiler() {
   transpiler.value.initLibrary();
   // Ensure to call once
   transpiler.value.initLibrary = () => Promise.resolve();
-  // Update location.hash
-  await setLocationHash();
   // Transpile
   await transpile();
 }
