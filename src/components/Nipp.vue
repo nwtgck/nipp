@@ -239,9 +239,13 @@ watch(pageTitle, async () => {
   document.title = pageTitle.value;
 });
 
-watch(script, async () => {
+const debounceScriptMillis = ref(0);
+const debouncedScript = useDebounce(script, debounceScriptMillis);
+watch(debouncedScript, async () => {
+  const startTime = new Date().getTime();
   // Transpile
   await transpile();
+  debounceScriptMillis.value = (new Date().getTime() - startTime) * 2;
 });
 
 const monacoOptions = computed<IStandaloneEditorConstructionOptions>(() => {
@@ -293,7 +297,7 @@ const urlOptionsPart = computed<string>(() => {
 });
 
 const urlEncodedCodePart = computedAsync<string | undefined>(async () => {
-  return await encodeCode(script.value, compressionAlg.value.compress);
+  return await encodeCode(debouncedScript.value, compressionAlg.value.compress);
 });
 
 const locationHash = computed<string | undefined>(() => {
