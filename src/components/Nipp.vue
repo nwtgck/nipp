@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import {computed, nextTick, onMounted, ref, watch, defineAsyncComponent} from 'vue';
-import { computedAsync } from '@vueuse/core';
+import {computedAsync, useDebounce} from '@vueuse/core';
 import * as uaDeviceDetector from 'ua-device-detector';
 const NippMonacoEditor = defineAsyncComponent(() => import('@/components/NippMonacoEditor.vue'));
 import {type Transpiler} from "@/transpilers/Transpiler";
@@ -116,6 +116,13 @@ function parseLocationHash(): { pageTitle: string, urlOptions: string[], encoded
 
 const visitWithoutFragment = window.location.hash === "";
 
+if (window.name === "") {
+  // window.name is used for identifier to restore input
+  window.name = `nipp_${Math.random()}`;
+}
+
+const INPUT_SESSION_STORAGE_KEY = `${window.name}_input`;
+
 type IStandaloneEditorConstructionOptions = Parameters<(typeof import("monaco-editor"))["editor"]["create"]>[1];
 
 const compressionAlgs = ref<readonly CompressionAlg[]>([
@@ -127,7 +134,11 @@ const compressionAlg = ref<CompressionAlg>(compressionAlgs.value[0]);
 // Page title
 const pageTitle = ref("");
 // Set empty string as default input
-const inputText  = ref("");
+const inputText  = ref(window.sessionStorage.getItem(INPUT_SESSION_STORAGE_KEY) ?? "");
+const debouncedInputText = useDebounce(inputText, 1000);
+watch(debouncedInputText, () => {
+  window.sessionStorage.setItem(INPUT_SESSION_STORAGE_KEY, debouncedInputText.value);
+});
 // Set empty string as default output
 const outputText = ref("");
 // Script
