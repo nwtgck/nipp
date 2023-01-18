@@ -1,14 +1,12 @@
-import Vue from 'vue'
-import App from './App.vue'
-import './registerServiceWorker'
+import { createApp, h } from 'vue';
+import App from './App.vue';
+import './registerServiceWorker';
 import Purecss from 'purecss';
 
-Vue.config.productionTip = false;
-
-new Vue({
-  render: h => h(App),
+createApp({
+  render: () => h(App),
   components: { Purecss }
-}).$mount('#app');
+}).mount('#app');
 
 (() => {
   const canonicalLink = document.createElement('link');

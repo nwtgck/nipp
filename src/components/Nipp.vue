@@ -50,7 +50,7 @@
     <span v-if="showTranspiledJsCode">
       <div class="pure-g">
         <div class="pure-u-1">
-          <NippMonacoEditor :value="transpiledJsCode" :options="{ language: 'javascript', fontSize: 12, minimap: { enabled: false } }" style="min-height: 5rem;"/>
+          <NippMonacoEditor :modelValue="transpiledJsCode" :options="{ language: 'javascript', fontSize: 12, minimap: { enabled: false } }" style="min-height: 5rem;"/>
         </div>
       </div>
     </span>
@@ -58,9 +58,9 @@
 </template>
 
 <script setup lang="ts">
-import {computed, nextTick, onMounted, ref, watch} from 'vue';
+import {computed, nextTick, onMounted, ref, watch, defineAsyncComponent} from 'vue';
 import * as uaDeviceDetector from 'ua-device-detector';
-const NippMonacoEditor = () => import('@/components/NippMonacoEditor.vue');
+const NippMonacoEditor = defineAsyncComponent(() => import('@/components/NippMonacoEditor.vue'));
 import {type Transpiler} from "@/transpilers/Transpiler";
 import {RubyTranspiler} from "@/transpilers/RubyTranspiler";
 import {Es2017Transpiler, FuncEs2017Transpiler} from "@/transpilers/Es2017Transpiler";
@@ -232,7 +232,7 @@ watch(script, async () => {
 });
 
 const monacoOptions = computed<IStandaloneEditorConstructionOptions>(() => {
-  const language = transpiler.value === RubyTranspiler ? 'ruby': 'javascript';
+  const language = transpiler.value.id === RubyTranspiler.id ? 'ruby': 'javascript';
   return {
     language: language,
     minimap: { enabled: false },
@@ -257,13 +257,13 @@ async function setLocationHash() {
 function getUrlOptionsPart(): string {
   const options: string[] = [];
   // (NOTE: transpiler:ruby is default so it should be pushed)
-  if (transpiler.value === Es2017Transpiler) {
+  if (transpiler.value.id === Es2017Transpiler.id) {
     options.push("es2017");
-  } else if (transpiler.value === FuncEs2017Transpiler) {
+  } else if (transpiler.value.id === FuncEs2017Transpiler.id) {
     options.push("func_es2017");
   }
   // (NOTE: compression:deflate is default so it should be pushed)
-  if (compressionAlg.value === LZMAAlg) {
+  if (compressionAlg.value.id === LZMAAlg.id) {
     options.push("lzma");
   }
   // If click_run is enable

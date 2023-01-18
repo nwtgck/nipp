@@ -1,6 +1,8 @@
+const { defineConfig } = require('@vue/cli-service');
 const MonocoEditorPlugin = require('monaco-editor-webpack-plugin');
 
-module.exports = {
+module.exports = defineConfig({
+  transpileDependencies: true,
   // (from: https://cli.vuejs.org/config/#publicpath)
   publicPath: "./",
   configureWebpack: {
@@ -9,4 +11,4 @@ module.exports = {
       new MonocoEditorPlugin(),
     ]
   }
-}
+});

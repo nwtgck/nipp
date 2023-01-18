@@ -3,6 +3,7 @@ import {type CompressionAlg} from "@/compression-algs/CompressionAlg";
 const pakoAsync = () => import('pako');
 
 export const DeflateAlg: CompressionAlg = {
+  id: Symbol(),
   name: "Deflate",
   compress: async (str: string) => {
     const pako = await pakoAsync();
