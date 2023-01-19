@@ -32,7 +32,7 @@
       <button v-if="enableClickRun" v-on:click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)">
         {{ clickRunButtonText }}
       </button>
-      <button v-if="!enableClickRun && blockingExecutionDetected" @click="enableClickRun = true" class="pure-button" style="color: white; background: rgb(255, 165, 0)">
+      <button v-if="false && !enableClickRun && blockingExecutionDetected" @click="enableClickRun = true" class="pure-button" style="color: white; background: rgb(255, 165, 0)">
         {{ "(BLOCKING detected) Enable click_run" }}
       </button>
     </form>
