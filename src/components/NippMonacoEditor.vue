@@ -8,22 +8,22 @@ import {defineComponent, onBeforeUnmount, onMounted, type PropType, ref, toRefs,
 
 export default defineComponent({
   props: {
-    value: { type: String, required: true },
+    modelValue: { type: String, required: true },
     options: { type: Object as PropType<monacoEditor.editor.IStandaloneEditorConstructionOptions> },
   },
   emits: {
-    input(value: string) {}
+    'update:modelValue'(value: string) {}
   },
   setup(props, context) {
     const rootRef = ref<HTMLDivElement>();
-    const { value, options } = toRefs(props);
+    const { modelValue, options } = toRefs(props);
     let editor: monacoEditor.editor.ICodeEditor | undefined;
 
     onMounted(() => {
       editor = monacoEditor.editor.create(rootRef.value!, props.options);
-      editor.setValue(props.value);
+      editor.setValue(props.modelValue);
       editor.onKeyUp(() => {
-        context.emit('input', editor!.getValue());
+        context.emit('update:modelValue', editor!.getValue());
       });
     });
 
@@ -32,12 +32,12 @@ export default defineComponent({
       editor = undefined;
     });
 
-    watch(value, () => {
+    watch(modelValue, () => {
       if (editor === undefined) {
         return;
       }
-      if (value.value !== editor.getValue()) {
-        editor.setValue(value.value);
+      if (modelValue.value !== editor.getValue()) {
+        editor.setValue(modelValue.value);
       }
     });
 

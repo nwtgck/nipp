@@ -10,6 +10,7 @@ const LZMAAsync = async () => {
 };
 
 export const LZMAAlg: CompressionAlg = {
+  id: Symbol(),
   name: "LZMA",
   compress: async (str: string) => {
     const LZMA = await LZMAAsync();

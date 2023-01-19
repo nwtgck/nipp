@@ -49,6 +49,7 @@ const OpalAsync = async () => {
 };
 
 export const RubyTranspiler: Transpiler = {
+  id: Symbol(),
   name: "Ruby",
   initLibrary: async () => {
     const Opal = await OpalAsync();
