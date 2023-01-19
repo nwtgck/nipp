@@ -25,7 +25,7 @@
     "vue": "^3.2.13"
   },
   "devDependencies": {
-    "@types/babel__core": "^7.1.20",
+    "@types/babel__core": "^7.20.0",
     "@types/babel__standalone": "^7.1.4",
     "@types/jest": "^27.0.1",
     "@types/pako": "^1.0.4",
