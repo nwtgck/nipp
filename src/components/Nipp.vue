@@ -15,19 +15,20 @@
                         style="width: 100%; height: 98%; border: #ccc solid 2px; box-sizing: border-box;"/>
     </div>
     <form onsubmit="return false" class="pure-form pure-form-aligned">
-      <label for="transpiler">Transpiler:</label>
-      <select id="transpiler" v-model="transpiler" v-on:change="onChangeTranspiler()">
+      <select v-model="transpiler" v-on:change="onChangeTranspiler()" style="margin-right: 1rem;">
         <option v-for="t in transpilers" v-bind:value="t" >{{ t.name }}</option>
       </select>
-
-      <label for="compression_alg">Compression:</label>
-      <select id="compression_alg" v-model="compressionAlg" >
-        <option v-for="a in compressionAlgs" v-bind:value="a" >{{ a.name }}</option>
-      </select>
-
-      <input type="checkbox" v-model="enableClickRun">: click_run
-      <input type="checkbox" v-model="enablePromiseWait">: promise_wait
-      <input type="checkbox" v-model="enableTopLevelAwait">: top-level await
+      <span style="margin-right: 1rem;"><input type="checkbox" v-model="enableClickRun" >: click_run</span>
+      <span style="display: inline-block"><input type="checkbox" v-model="consoleClearBeforeRun">: console_clear</span>
+      <details style="display: inline-block; margin-left: 1rem; margin-right: 1rem;">
+        <summary>More options</summary>
+        <label for="compression_alg">Compression:</label>
+        <select id="compression_alg" v-model="compressionAlg" >
+          <option v-for="a in compressionAlgs" v-bind:value="a" >{{ a.name }}</option>
+        </select>
+        <input type="checkbox" v-model="enablePromiseWait">: promise_wait
+        <input type="checkbox" v-model="enableTopLevelAwait">: top-level await
+      </details>
 
       <button v-if="enableClickRun" v-on:click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)">
         {{ clickRunButtonText }}
@@ -125,6 +126,7 @@ if (window.name === "") {
 }
 
 const INPUT_SESSION_STORAGE_KEY = `${window.name}_input`;
+const CONSOLE_CLEAR_STORAGE_KEY = 'clear_console_before_run';
 
 type IStandaloneEditorConstructionOptions = Parameters<(typeof import("monaco-editor"))["editor"]["create"]>[1];
 
@@ -180,6 +182,10 @@ const scriptModified = ref(false);
 const transpileElapsedMillis = ref(0);
 const executeElapsedMillis = ref(0);
 const blockingExecutionDetected = ref(false);
+const consoleClearBeforeRun = ref(window.localStorage.getItem(CONSOLE_CLEAR_STORAGE_KEY) === "true");
+watch(consoleClearBeforeRun, () => {
+  window.localStorage.setItem(CONSOLE_CLEAR_STORAGE_KEY, consoleClearBeforeRun.value.toString());
+});
 
 watch(script, () => {
   scriptModified.value = true;
@@ -371,6 +377,9 @@ watch(inputText, () => {
 function setOutputText() {
   // Set global INPUT string variable
   (window as any).INPUT = inputText.value;
+  if (consoleClearBeforeRun.value) {
+    console.clear();
+  }
   try {
     blockingExecutionDetected.value = false;
     let blockingExecution = true;
