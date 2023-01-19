@@ -1,8 +1,12 @@
 <template>
   <div>
     <form class="pure-form pure-g">
-      <input type="text" v-model="pageTitle" placeholder="App name" class="pure-u-11-12">
-      <div class="pure-u-1-12" style="text-align: center">
+      <input type="text" v-model="pageTitle" placeholder="App name" class="pure-u-15-24">
+      <select v-model="selectedExample" class="pure-u-8-24">
+        <option :value="undefined">Examples</option>
+        <option v-for="e in examples" :value="e">{{ e.name }}</option>
+      </select>
+      <div class="pure-u-1-24" style="text-align: center">
         <img src="../assets/twitter.png" alt="Share on Twitter" v-on:click="shareOnTwitter()" style="width: 2em; height: 2em;">
       </div>
     </form>
@@ -72,6 +76,7 @@ import {Es2017Transpiler, FuncEs2017Transpiler} from "@/transpilers/Es2017Transp
 import {type CompressionAlg} from "@/compression-algs/CompressionAlg";
 import {DeflateAlg} from "@/compression-algs/DeflateAlg";
 import {LZMAAlg} from "@/compression-algs/LZMAAlg";
+import {Example, examples} from "@/examples";
 
 // Encode code
 async function encodeCode(code: string, compressor: (raw: string) => Promise<string>): Promise<string> {
@@ -185,6 +190,28 @@ const blockingExecutionDetected = ref(false);
 const consoleClearBeforeRun = ref(window.localStorage.getItem(CONSOLE_CLEAR_STORAGE_KEY) === "true");
 watch(consoleClearBeforeRun, () => {
   window.localStorage.setItem(CONSOLE_CLEAR_STORAGE_KEY, consoleClearBeforeRun.value.toString());
+});
+const selectedExample = ref<Example>();
+const loadExampleFirstTime = ref(true);
+watch(selectedExample, async () => {
+  if (selectedExample.value === undefined) {
+    return;
+  }
+  if (loadExampleFirstTime.value && !window.confirm("Are you sure to load an example?")) {
+    selectedExample.value = undefined;
+    return;
+  }
+  loadExampleFirstTime.value = false;
+  if ("urlFragment" in selectedExample.value) {
+    location.hash = await selectedExample.value.urlFragment();
+    location.reload();
+  } else {
+    script.value = await selectedExample.value.script();
+    transpiler.value = selectedExample.value.transpier;
+    enableClickRun.value = selectedExample.value.options.clickRun;
+    enablePromiseWait.value = selectedExample.value.options.promiseWait;
+    enableTopLevelAwait.value = selectedExample.value.options.topLevelAwait;
+  }
 });
 
 watch(script, () => {
