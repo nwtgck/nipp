@@ -32,6 +32,9 @@
       <button v-if="enableClickRun" v-on:click="onClickClickRun()" class="pure-button" style="color: white; background: rgb(28, 184, 65)">
         {{ clickRunButtonText }}
       </button>
+      <button v-if="!enableClickRun && blockingExecutionDetected" @click="enableClickRun = true" class="pure-button" style="color: white; background: rgb(255, 165, 0)">
+        {{ "(BLOCKING detected) Enable click_run" }}
+      </button>
     </form>
 
     <form class="pure-form pure-g">
@@ -174,6 +177,9 @@ const clickRunButtonText = ref("");
 // Use textarea instead of ace
 const useTextarea = ref(false);
 const scriptModified = ref(false);
+const transpileElapsedMillis = ref(0);
+const executeElapsedMillis = ref(0);
+const blockingExecutionDetected = ref(false);
 
 watch(script, () => {
   scriptModified.value = true;
@@ -239,13 +245,10 @@ watch(pageTitle, async () => {
   document.title = pageTitle.value;
 });
 
-const debounceScriptMillis = ref(0);
-const debouncedScript = useDebounce(script, debounceScriptMillis);
+const debouncedScript = useDebounce(script, computed(() => transpileElapsedMillis.value));
 watch(debouncedScript, async () => {
-  const startTime = new Date().getTime();
   // Transpile
   await transpile();
-  debounceScriptMillis.value = (new Date().getTime() - startTime) * 2;
 });
 
 const monacoOptions = computed<IStandaloneEditorConstructionOptions>(() => {
@@ -336,8 +339,10 @@ async function onChangeTranspiler() {
 
 async function transpile() {
   try {
+    const startTime = new Date().getTime();
     // Transpile script and Set executable function
     const executableFunctionAndTraspiledJsCode = await transpiler.value.getExecutableFunctionAndTranspiledJsCode(script.value, enableTopLevelAwait.value);
+    transpileElapsedMillis.value = new Date().getTime() - startTime;
     executableFunction.value = executableFunctionAndTraspiledJsCode.executableFunction;
     transpiledJsCode.value = executableFunctionAndTraspiledJsCode.transpiledJsCode;
     errorStr.value = "";
@@ -367,6 +372,12 @@ function setOutputText() {
   // Set global INPUT string variable
   (window as any).INPUT = inputText.value;
   try {
+    blockingExecutionDetected.value = false;
+    let blockingExecution = true;
+    const timer = setTimeout(() => {
+      blockingExecution = false;
+    }, 10);
+    const startTime = new Date().getTime();
     // Get output
     const output = executableFunction.value();
     // If promise-wait is enable
@@ -374,11 +385,16 @@ function setOutputText() {
       outputText.value = "<The promise is not complete yet>";
       Promise.resolve(output)
         .then((res: any) => {
+          executeElapsedMillis.value = new Date().getTime() - startTime;
+          clearInterval(timer);
           nextTick(() => {
             outputText.value = res + "";
             // Set no error
             errorStr.value = "";
             hasError.value = false;
+            if (blockingExecution && executeElapsedMillis.value > 50) {
+              blockingExecutionDetected.value = true;
+            }
           });
         })
         .catch((err: Error) => {
@@ -389,11 +405,16 @@ function setOutputText() {
           });
         });
     } else {
+      executeElapsedMillis.value = new Date().getTime() - startTime;
+      clearInterval(timer);
       // Set output text
       outputText.value = output + "";
       // Set no error
       errorStr.value = "";
       hasError.value = false;
+      if (blockingExecution && executeElapsedMillis.value > 50) {
+        blockingExecutionDetected.value = true;
+      }
     }
   } catch (err: any) {
     // console.log("JS Runtime error", err);
