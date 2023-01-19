@@ -2,6 +2,7 @@ import { createApp, h } from 'vue';
 import App from './App.vue';
 import './registerServiceWorker';
 import Purecss from 'purecss';
+import "@/original-console";
 
 createApp({
   render: () => h(App),

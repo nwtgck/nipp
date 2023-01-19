@@ -14,6 +14,8 @@
                         :options="monacoOptions"
                         style="width: 100%; height: 98%; border: #ccc solid 2px; box-sizing: border-box;"/>
     </div>
+    <Console :data="consoleFeedConsole.value" />
+
     <form onsubmit="return false" class="pure-form pure-form-aligned">
       <label for="transpiler">Transpiler:</label>
       <select id="transpiler" v-model="transpiler" v-on:change="onChangeTranspiler()">
@@ -68,6 +70,32 @@ import {Es2017Transpiler, FuncEs2017Transpiler} from "@/transpilers/Es2017Transp
 import {type CompressionAlg} from "@/compression-algs/CompressionAlg";
 import {DeflateAlg} from "@/compression-algs/DeflateAlg";
 import {LZMAAlg} from "@/compression-algs/LZMAAlg";
+import { Console, DataAPI } from "vue-console-feed";
+import "vue-console-feed/style.css";
+import {originalConsole} from "@/original-console";
+
+
+const consoleFeedConsole = ref<DataAPI>(null as any as DataAPI);
+function proxeidConsoleLog() {
+  originalConsole.warn("HERE!", arguments);
+  originalConsole.log(...arguments);
+  consoleFeedConsole.value.log(...arguments);
+};
+renewConsoleFeedConsole();
+const consoleProxy = new Proxy(window.console, {
+  get: function (target, prop, receiver) {
+    if (prop === "log") {
+      return proxeidConsoleLog;
+    }
+    return Reflect.get(target, prop, receiver);
+  },
+});
+// Update window.console
+window.console = consoleProxy;
+function renewConsoleFeedConsole() {
+  // .clear() is available, but it should be better to use API beyond vue-console-feed for more control
+  consoleFeedConsole.value = new DataAPI(false, 0);
+}
 
 // Encode code
 async function encodeCode(code: string, compressor: (raw: string) => Promise<string>): Promise<string> {
@@ -364,6 +392,7 @@ watch(inputText, () => {
 
 // Set output text
 function setOutputText() {
+  renewConsoleFeedConsole();
   // Set global INPUT string variable
   (window as any).INPUT = inputText.value;
   try {
