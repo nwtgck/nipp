@@ -1,6 +1,6 @@
 {
   "name": "nipp",
-  "version": "0.18.0",
+  "version": "0.18.1",
   "private": true,
   "description": "Mini Application Hosted on URL",
   "author": "Ryo Ota <nwtgck@nwtgck.org> (https://github.com/nwtgck)",
@@ -13,9 +13,9 @@
     "copy-scripts": "npm run copy-opal && npm run copy-lzma"
   },
   "dependencies": {
-    "@babel/standalone": "^7.20.12",
-    "@vueuse/core": "^9.11.0",
-    "core-js": "^3.8.3",
+    "@babel/standalone": "^7.20.13",
+    "@vueuse/core": "^9.11.1",
+    "core-js": "^3.27.2",
     "lzma": "^2.3.2",
     "monaco-editor": "^0.34.1",
     "pako": "^1.0.11",
@@ -25,7 +25,7 @@
     "vue": "^3.2.13"
   },
   "devDependencies": {
-    "@types/babel__core": "^7.1.20",
+    "@types/babel__core": "^7.20.0",
     "@types/babel__standalone": "^7.1.4",
     "@types/jest": "^27.0.1",
     "@types/pako": "^1.0.4",
