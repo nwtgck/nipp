@@ -13,7 +13,7 @@
     "copy-scripts": "npm run copy-opal && npm run copy-lzma"
   },
   "dependencies": {
-    "@babel/standalone": "^7.20.13",
+    "@babel/standalone": "^7.21.4",
     "@vueuse/core": "^9.11.1",
     "core-js": "^3.27.2",
     "lzma": "^2.3.2",
