@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # (from: https://github.com/actions/checkout/tree/f95f2a38561736d1542cb9fbf736eea3d00ab5a6#checkout-submodules)
       - name: Checkout submodules
         shell: bash
