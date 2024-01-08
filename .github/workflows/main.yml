@@ -5,7 +5,10 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-20.04
-
+    permissions:
+      contents: read
+      deployments: write
+      statuses: write
     steps:
       - uses: actions/checkout@v4
       # (from: https://github.com/actions/checkout/tree/f95f2a38561736d1542cb9fbf736eea3d00ab5a6#checkout-submodules)
