@@ -18,7 +18,7 @@ jobs:
           auth_header="$(git config --local --get http.https://github.com/.extraheader)"
           git submodule sync --recursive
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-      - uses: actions/setup-node@v3.8.1
+      - uses: actions/setup-node@v4.0.2
         with:
           node-version: 12.x
       - run: npm ci
