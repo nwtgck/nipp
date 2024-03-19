@@ -15,7 +15,7 @@
   "dependencies": {
     "@babel/standalone": "^7.20.13",
     "@vueuse/core": "^10.7.1",
-    "core-js": "^3.35.0",
+    "core-js": "^3.36.1",
     "lzma": "^2.3.2",
     "monaco-editor": "^0.38.0",
     "pako": "^1.0.11",
