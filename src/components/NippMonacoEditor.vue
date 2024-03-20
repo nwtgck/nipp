@@ -4,6 +4,7 @@
 
 <script lang="ts">
 import * as monacoEditor from "monaco-editor";
+const { initVimMode } = require("monaco-vim");
 import {
   defineComponent,
   onBeforeUnmount,
@@ -31,6 +32,7 @@ export default defineComponent({
 
     onMounted(() => {
       editor = monacoEditor.editor.create(rootRef.value!, props.options);
+      initVimMode(editor);
       editor.setValue(props.modelValue);
       editor.onKeyUp(() => {
         context.emit("update:modelValue", editor!.getValue());
